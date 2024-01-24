@@ -1,6 +1,10 @@
 #include <gtk/gtk.h>
 #include "window.h"
+#include "keyboard.h"
 #include "toolbar.h"
+#include "widgets.h"
+#include "keyboard.h"
+
 
 GtkWidget* generateWindow(int *ref_argc, char** *ref_argv) {
   // Initialize GTK
@@ -23,6 +27,9 @@ GtkWidget* generateWindow(int *ref_argc, char** *ref_argv) {
 
   // Connect the "destroy" signal to the on_window_destroy callback
   g_signal_connect(mainWindow, "destroy", G_CALLBACK(on_window_destroy), NULL);
+
+    // Connect the "key-press-event" signal to the user made key-checker
+  g_signal_connect(G_OBJECT(mainWindow), "key-press-event", G_CALLBACK(onKeyPress), NULL);
 
   return mainWindow;
 }

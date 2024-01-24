@@ -3,6 +3,7 @@
 #include "window.h"
 #include "toolbar.h"
 #include "widgets.h"
+#include "misc.h"
 
 int main(int argc, char** argv) {
   // Setting up main window
