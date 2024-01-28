@@ -1,6 +1,8 @@
+#include <gtk/gtk.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include "misc.h"
 #include "log.h"
 
 // Getting the current date and time using time.h C library
@@ -23,15 +25,22 @@ char* getFormatDateTime() {
 
 // Function to print a message (and the time) to the logfile
 void logMessage(const char *message) {
-  FILE *logFile = fopen("../logfile.log", "a"); // Opening the file object in append mode
+
+  // Finding the path of the logfile (relative to the .exe's location)
+  char logfileLocation[260];
+  appendFileToExecDirWindowsWDoubleBackslash("\\logfile.log", logfileLocation, sizeof(logfileLocation));
+
+  // Opening the file object in append mode --> File path found from .exe location
+  FILE *logFile = fopen(logfileLocation, "a"); 
   
   // Checking if a file was returned
   if(logFile != NULL) {
     const char *currentTime = getFormatDateTime();
-    fprintf(logFile, "\n[%s]\n\t%s\n", currentTime, message);
+    fprintf(logFile, "\n[%s]\n%s\n", currentTime, message);
     
     free((void*)currentTime);
   }
+
   fclose(logFile);
 }
 

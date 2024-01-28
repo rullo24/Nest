@@ -1,24 +1,34 @@
+# Defining the compiler to be used and all necessary flags
 CC = gcc
-CFLAGS = -Wall -O2 `pkg-config --cflags gtk+-3.0`
-LIBS = `pkg-config --libs gtk+-3.0`
+CFLAGS = -Wall -I./code $(shell pkg-config --cflags gtk+-3.0)
+LDFLAGS = -lUser32 $(shell pkg-config --libs gtk+-3.0)
+WINDOWS_FLAGS = # -mwindows 	<-- uncomment this to remove the windows terminal link to the application
 
-SRC_DIR = code
-OBJ_DIR = $(SRC_DIR)/objects
-EXEC = ./SyncNest
+# Specifying the location of the source files and where to store the produced object files
+SRC_DIR = ./code/src
+OBJ_DIR = ./code/Objects
 
-SRCS = $(wildcard $(SRC_DIR)/*.c)
-OBJS = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
+# Collecting source files and generating all object files
+SRC = $(wildcard $(SRC_DIR)/*.c)
+OBJ = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC))
+EXECUTABLE = SyncNest.exe
 
-all: $(OBJ_DIR) $(EXEC)
+# Rule set to build all
+all: $(OBJ_DIR) $(EXECUTABLE)
 
-$(EXEC): $(OBJS)
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+# Rule to link the object files into the .exe
+$(EXECUTABLE): $(OBJ)
+	$(CC) $^ -o $@ $(LDFLAGS) $(WINDOWS_FLAGS)
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	$(CC) -c $< -o $@ $(CFLAGS)
-
+# Rule to create the obj dir if it DNE
 $(OBJ_DIR):
-	mkdir -p $(OBJ_DIR)
+	@if not exist $(OBJ_DIR) mkdir $(subst /,\,$(OBJ_DIR))
 
+# Rule to compile each .c file into a .o file
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	$(CC) -c $(CFLAGS) $< -o $@
+
+# Rule to remove the .exe and object files when "make clean" is run
 clean:
-	rm -rf $(OBJ_DIR) $(EXEC)
+	@if exist $(OBJ_DIR) rmdir /s /q $(subst /,\,$(OBJ_DIR))
+	@if exist $(EXECUTABLE) del $(subst /,\,$(EXECUTABLE))

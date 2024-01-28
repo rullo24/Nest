@@ -4,6 +4,7 @@
 #include "toolbar.h"
 #include "widgets.h"
 #include "misc.h"
+#include "log.h"
 
 int main(int argc, char** argv) {
   // Setting up main window
