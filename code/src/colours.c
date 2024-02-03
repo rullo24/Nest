@@ -32,6 +32,6 @@ void colourWidgetFromStyles(GtkCssProvider *cssProvider, GtkWidget *selectedWidg
 
   // Getting the widget's current style object for alteration
   GtkStyleContext *selectedWidgetContext = gtk_widget_get_style_context(selectedWidget);
-  gtk_style_context_add_provider(selectedWidgetContext, GTK_STYLE_PROVIDER(cssProvider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+  gtk_style_context_add_provider(selectedWidgetContext, GTK_STYLE_PROVIDER(cssProvider), GTK_STYLE_PROVIDER_PRIORITY_USER);
 }
 

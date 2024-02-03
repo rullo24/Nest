@@ -11,7 +11,7 @@ OBJ_DIR = ./code/Objects
 # Collecting source files and generating all object files
 SRC = $(wildcard $(SRC_DIR)/*.c)
 OBJ = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC))
-EXECUTABLE = SyncNest.exe
+EXECUTABLE = Nest.exe
 
 # Rule set to build all
 all: $(OBJ_DIR) $(EXECUTABLE)

@@ -1,4 +1,18 @@
-#testButtonR {
-   background-color: #fdca00;
-   color: #15f005;
+#addressBar {
+   background-color: #343434; 
+   color: white;  
+   font-family: 'Roboto', sans-serif;
+   font-size: 16px;
+   font-weight: bold;
+}
+
+*:not(#addressBar) {
+   border: 1px;
+   background-color: #343434;
+   color: white;
+}
+
+*:not(#addressBar):hover {
+   background-color: aqua;
+   color: aqua;
 }

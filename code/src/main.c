@@ -7,6 +7,8 @@
 #include "log.h"
 
 int main(int argc, char** argv) {
+  // TODO: Designating a dark theme to the application
+
   // Setting up main window
   GtkWidget* mainWindow = generateWindow(&argc, &argv);
 

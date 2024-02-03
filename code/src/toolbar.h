@@ -1,6 +1,7 @@
 #ifndef TOOLBAR_H
 #define TOOLBAR_H
 
-GtkWidget* createToolbar(GtkWidget *mainWindow, int toolbarHeight);
+GtkToolItem* createToolbarButton(GtkCssProvider *mainCssProvider, char *buttonNameAsString, char *pathFromExecDir, int toolbarHeight);
+GtkWidget* createToolbar(GtkWidget *mainWindow, GtkCssProvider *mainCssProvider, int toolbarHeight);
 
 #endif // !
