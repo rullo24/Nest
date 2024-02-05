@@ -10,6 +10,8 @@
 #include "misc.h"
 #include "log.h"
 #include "fileBar.h"
+#include "filechoose.h"
+#include <stdbool.h>
 
 // A structure that is used to hold the window's width and height
 struct WINDOWSIZESTRUCT {
@@ -71,13 +73,11 @@ void layoutBaseApp(GtkWidget* mainWindow) {
   int filebarHeight = workingAreaHeight/40; // 1:40
   GtkWidget *filebar = createFilebar(mainWindow, mainCssProvider, filebarHeight);
   colourWidgetFromStyles(mainCssProvider, filebar, "filebar");
-
-
-
-
-
-  ///// TODO \\\\\
-
+  
+  // TODO: 
+  // Create a listbox row for each file in the folder 
+  // --> This should happen in an external function (not widgets)
+  
   // Creating the scrollbox & listbox for the right side
   GtkWidget *scrolledWindow = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledWindow), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -91,6 +91,11 @@ void layoutBaseApp(GtkWidget* mainWindow) {
     gtk_grid_attach(GTK_GRID(rowGrid), listTestButton, 0, 2, 1, 1);
     gtk_container_add(GTK_CONTAINER(listBoxRowTest), rowGrid);
     gtk_list_box_insert(GTK_LIST_BOX(fileListBox), listBoxRowTest, -1);
+  }
+
+  bool actionRemoveListRows = removeAllListBoxRows(fileListBox);
+  if(actionRemoveListRows == false) {
+    logMessage("Error: Failed to remove list box rows [widget.c].");
   }
 
   // Adding widgets to the right vertical box
