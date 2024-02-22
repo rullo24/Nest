@@ -3,6 +3,7 @@
 #include "misc.h"
 #include "log.h"
 #include "colours.h"
+#include "keyboard.h"
 
 GtkToolItem* createToolbarButton(GtkCssProvider *mainCssProvider, char *buttonNameAsString, char *pathFromExecDir, int toolbarHeight) {
   // Create some toolbar items
@@ -56,11 +57,13 @@ GtkWidget* createToolbar(GtkWidget *mainWindow, GtkCssProvider *mainCssProvider,
   GtkWidget *addressBar = gtk_entry_new();
   GtkToolItem *addressBarToolItem = gtk_tool_item_new();
   gtk_container_add(GTK_CONTAINER(addressBarToolItem), addressBar);
+  g_signal_connect(addressBar, "key-press-event", G_CALLBACK(checkForAddrBarEnter), NULL);
   colourWidgetFromStyles(mainCssProvider, addressBar, "addressBar"); // Used to change the font and size of text in the entry box
 
   GtkWidget *searchBar = gtk_entry_new();
   GtkToolItem *searchBarToolItem = gtk_tool_item_new();
   gtk_container_add(GTK_CONTAINER(searchBarToolItem), searchBar);
+  colourWidgetFromStyles(mainCssProvider, searchBar, "searchBar");
 
   // Adding the buttons and widgets to the toolbar & changing their properties
   gtk_toolbar_insert(GTK_TOOLBAR(mainToolbar), GTK_TOOL_ITEM(prevUsedDirToolItem), -1);

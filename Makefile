@@ -2,7 +2,7 @@
 CC = gcc
 CFLAGS = -Wall -I./code $(shell pkg-config --cflags gtk+-3.0)
 LDFLAGS = -lUser32 $(shell pkg-config --libs gtk+-3.0)
-WINDOWS_FLAGS = # -mwindows 	<-- uncomment this to remove the windows terminal link to the application
+WINDOWS_FLAGS = # -mwindows 	# <-- uncomment this to remove the windows terminal link to the application
 
 # Specifying the location of the source files and where to store the produced object files
 SRC_DIR = ./code/src

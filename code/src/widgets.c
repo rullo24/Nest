@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <gtk/gtk.h>
 #include <windows.h>
+#include "structs.h"
 #include <tchar.h>
 #include <strings.h>
 #include "window.h"
@@ -13,12 +14,6 @@
 #include "filechoose.h"
 #include <stdbool.h>
 
-// A structure that is used to hold the window's width and height
-struct WINDOWSIZESTRUCT {
-  int windowWidth;
-  int windowHeight;
-};
-
 // Initialising the WINDOWSIZESTRUCT
 void initWINDOWSIZESTRUCT (GtkWidget *mainWindow, struct WINDOWSIZESTRUCT *windowSize) {
   int width, height;
@@ -27,10 +22,10 @@ void initWINDOWSIZESTRUCT (GtkWidget *mainWindow, struct WINDOWSIZESTRUCT *windo
   windowSize->windowHeight = height;
 }
 
-// Structure to hold the data of all .png icons in a hashmap
-typedef struct {
-  GtkWidget *extIconImage;
-} IconImageData;
+// Getting the data from a button
+// WINDOWSFILEDATA *getFileDataFromButton(GtkWidget *parsedButton) {
+
+// }
 
 // Functions to make syntax easier on the eye when reading larger functions
 GtkWidget* createSizedVertBox(int edgeSpacing) {
@@ -43,7 +38,7 @@ GtkWidget* createSizedHorzPane() {
   return gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
 }
 
-void layoutBaseApp(GtkWidget* mainWindow) {
+void layoutBaseApp(GtkWidget* mainWindow, LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL) {
   // Generaating the window's css style provider object
   GtkCssProvider *mainCssProvider = loadCssProviderAndStyles();  // Gathering the Working Area for use in widget scaling
   colourWidgetFromStyles(mainCssProvider, mainWindow, "mainWindow");
@@ -56,10 +51,10 @@ void layoutBaseApp(GtkWidget* mainWindow) {
   // Create a boxs to hold the toolbar & the other widgets
   GtkWidget *vertBoxLargeMain = createSizedVertBox(0); // Creating a vertical box to house all of the smaller components
   GtkWidget *vertBoxRightMain = createSizedVertBox(0); // Creating a vertical box to hold the directories, file selector & tipsbar
+  colourWidgetFromStyles(mainCssProvider, vertBoxRightMain, "backgroundBorder");
   GtkWidget *vertBoxLeftMain = createSizedVertBox(0); // Creating a vertical box to hold file tree and favourites buttons
   GtkWidget *horzPaneLargeMid = createSizedHorzPane(); // Creating a draggable pane between the tree and directory lister
   gtk_container_add(GTK_CONTAINER(mainWindow), vertBoxLargeMain); 
-
 
   // Creating all widgets and defining their properties
   int toolbarHeight = workingAreaHeight/25; // 1:25
@@ -74,39 +69,33 @@ void layoutBaseApp(GtkWidget* mainWindow) {
   GtkWidget *filebar = createFilebar(mainWindow, mainCssProvider, filebarHeight);
   colourWidgetFromStyles(mainCssProvider, filebar, "filebar");
   
-  // TODO: 
-  // Create a listbox row for each file in the folder 
-  // --> This should happen in an external function (not widgets)
-  
-  // Creating the scrollbox & listbox for the right side
   GtkWidget *scrolledWindow = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledWindow), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   GtkWidget *fileListBox = gtk_list_box_new();
   gtk_container_add(GTK_CONTAINER(scrolledWindow), fileListBox);
-  for (int i=0; i<20; i++) {
-    GtkWidget *listTestButton = gtk_button_new_with_label("Test");
-    GtkWidget *listBoxRowTest = gtk_list_box_row_new();
-    GtkWidget *rowGrid = gtk_grid_new();
-
-    gtk_grid_attach(GTK_GRID(rowGrid), listTestButton, 0, 2, 1, 1);
-    gtk_container_add(GTK_CONTAINER(listBoxRowTest), rowGrid);
-    gtk_list_box_insert(GTK_LIST_BOX(fileListBox), listBoxRowTest, -1);
-  }
-
-  bool actionRemoveListRows = removeAllListBoxRows(fileListBox);
-  if(actionRemoveListRows == false) {
-    logMessage("Error: Failed to remove list box rows [widget.c].");
-  }
+  addFileButtonsToScreen(ptrptr_headLL, ptrptr_tailLL, fileListBox, mainCssProvider); // Moving files to the listbox
+  colourWidgetFromStyles(mainCssProvider, fileListBox, "fileListBox");
 
   // Adding widgets to the right vertical box
   gtk_box_pack_start(GTK_BOX(vertBoxRightMain), filebar, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vertBoxRightMain), scrolledWindow, TRUE, TRUE, 0); // The filebox window fills the empty space depending on the window size
   gtk_box_pack_start(GTK_BOX(vertBoxRightMain), mainTipsbar, FALSE, FALSE, 0); 
 
-  // Adding widgets to the left vertical box
-  GtkWidget *testButton = gtk_button_new_with_label("Test");
-  gtk_box_pack_start(GTK_BOX(vertBoxLeftMain), testButton, TRUE, TRUE, 0); // Adding the test button the left vert box
-  colourWidgetFromStyles(mainCssProvider, testButton, "testButton"); // colour.h
+  // NEED TO ADD WIDGETS TO THE LEFT BOX
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // Adding the left and right vertical boxes to the larger horz boxes
   gtk_paned_add1(GTK_PANED(horzPaneLargeMid), vertBoxLeftMain);
@@ -122,5 +111,4 @@ void layoutBaseApp(GtkWidget* mainWindow) {
   // Adding the widgets to the large vertical box
   gtk_box_pack_start(GTK_BOX(vertBoxLargeMain), mainToolbar, FALSE, FALSE, 0); // Adding top toolbar 
   gtk_box_pack_start(GTK_BOX(vertBoxLargeMain), GTK_WIDGET(horzPaneLargeMid), TRUE, TRUE, 0);
-
 }

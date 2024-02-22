@@ -1,0 +1,4 @@
+todo:
+- Use the address bar + enter key to move dir
+- when button is double clicked, change dir to the next dir (or open if a file)
+- need to free the memory that is taken by the buttons for the data

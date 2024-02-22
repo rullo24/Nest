@@ -1,7 +1,7 @@
 #ifndef KEYBOARD_H
 #define KEYBOARD_H
 
-gboolean checkAndRunIfEscPressed();
-gboolean onKeyPress(GtkWidget *widget, GdkEventKey *event, gpointer userData);
+gboolean checkForEscKeyEnter(GtkWidget *widget, GdkEventKey *event, gpointer userData);
+gboolean checkForAddrBarEnter(GtkWidget *widget, GdkEventKey *event, gpointer data);
 
 #endif // !KEYBOARD_H

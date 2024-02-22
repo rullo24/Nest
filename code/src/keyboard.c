@@ -1,20 +1,63 @@
+#include <windows.h>
 #include <stdio.h>
 #include <gtk/gtk.h>
 #include "keyboard.h"
+#include <gtk/gtk.h>
+#include "misc.h"
+#include "log.h"
 
-gboolean checkAndRunIfEscPressed(GtkWidget *mainWindow, GdkEventKey *event) {
+/////////////////////////////////////////////////////////
+///////////////// START OF CUSTOM FUNCS /////////////////
+
+// Exiting the mainWindow on esc key press
+gboolean _checkMainWindowKeystrokeForExitKey(GtkWidget *mainWindow, GdkEventKey *event) {
   if(event->keyval == GDK_KEY_Escape) {
-    gtk_widget_destroy(mainWindow);
+    gtk_widget_destroy(mainWindow); // NEEDS TO DEALLOCATE ALL MEMORY FIRST
     return TRUE;
   }
 
   return FALSE;
 }
 
+// Changing directory if addr bar holds a dir
+void _changeDirFromAddrBarSpecified(GtkWidget *addrBar, gpointer data) {
+  const gchar *addrBarCurrentTextGchar = gtk_entry_get_text(GTK_ENTRY(addrBar));
+  char *addrBarCurrentText = (char*)addrBarCurrentTextGchar;
+  uint8_t dirExistsAsDir = isDirLocationValidDir(addrBarCurrentText);
+  if (dirExistsAsDir == 1) { // Acting on a found dir
+    // Move to the new directory
+  
+
+
+
+
+
+
+
+
+
+
+
+  }
+  else if (dirExistsAsDir == 2) { // Opening the found file
+    HINSTANCE fileOpenResult = ShellExecute(NULL, "open", addrBarCurrentText, NULL, NULL, SW_SHOWNORMAL);
+    if (fileOpenResult <= (HINSTANCE)32) {
+      logMessage("ERROR: Failed to open the address bar file [keyboard.c]");
+      return;
+    }
+  }
+}
+
+////////////////// END OF CUSTOM FUNCS //////////////////
+/////////////////////////////////////////////////////////
+// --------------------------------------------------- //
+/////////////////////////////////////////////////////////
+//////////////// START OF CALLBACK FUNCS ////////////////
+
 // Callback function to be executed whenever a key is pressed
-gboolean onKeyPress(GtkWidget *mainWindow, GdkEventKey *event, gpointer userData) {
+gboolean checkForEscKeyEnter(GtkWidget *mainWindow, GdkEventKey *event, gpointer userData) {
   // Check for escape key pressed
-  gboolean escPressedBool = checkAndRunIfEscPressed(mainWindow, event);
+  gboolean escPressedBool = _checkMainWindowKeystrokeForExitKey(mainWindow, event);
   if(escPressedBool == TRUE) {
     return TRUE;
   }
@@ -22,3 +65,18 @@ gboolean onKeyPress(GtkWidget *mainWindow, GdkEventKey *event, gpointer userData
   // If the key press is not a specified key, let GTK handle it
   return FALSE;
 }
+
+// Address bar callback function for changing the current dir on enter key press
+gboolean checkForAddrBarEnter(GtkWidget *widget, GdkEventKey *event, gpointer data) {
+  // Requires the key to be pressed down (not on up) & main or keypad enter key
+  if (event->type == GDK_KEY_PRESS && (event->keyval == GDK_KEY_Return || event -> keyval == GDK_KEY_KP_Enter)) {
+    // Executing directory change func
+    _changeDirFromAddrBarSpecified(widget, data);
+
+    return TRUE; // Mark the event as used
+  }
+  return FALSE; // Ignore the results of the event if it does not meet the if requirements
+}
+
+///////////////// END OF CALLBACK FUNCS /////////////////
+/////////////////////////////////////////////////////////

@@ -1,137 +1,144 @@
 #include <gtk/gtk.h>
 #include <glib.h>
-#include <windows.h>
 #include <tchar.h>
 #include <stdio.h>
 #include "filechoose.h"
 #include <stdbool.h>
 #include "log.h"
+#include "linkedlist.h"
+#include "log.h"
+#include "colours.h"
+#include "structs.h"
 
-typedef struct {
-    TCHAR       cAlternateFileName[14];
-    TCHAR       cFileName[MAX_PATH];
-    DWORD       dwFileAttributes;
-    FILETIME    ftCreationTime;
-    FILETIME    ftLastAccessTime;
-    FILETIME    ftLastWriteTime;
-    DWORD       nFileSizeHigh;
-    DWORD       nFileSizeLow;
-} WINDOWSFILEDATA;
-
-bool removeAllListBoxRows(GtkWidget *fileListBox) {
+// Just removes previous buttons. Does not deal with the underlying data LL
+void removeAllGTKListBoxRows(GtkWidget *fileListBox) {
     // Get all of the children widgets within the list box   
     GList *listBoxChildren = gtk_container_get_children(GTK_CONTAINER(fileListBox));
-    if (listBoxChildren == NULL) {
-        logMessage("Error: Failed to get listbox children [filechoose.h].");
-        return false;
+    if (listBoxChildren == NULL) { // Returns NULL if the listbox is empty
+        return;
     }
 
     // Iterating through each child widget and removing it from the list box
     GList *childrenIterator;
     for(childrenIterator = listBoxChildren; childrenIterator != NULL; childrenIterator = g_list_next(childrenIterator)) {
-        gtk_widget_destroy(GTK_WIDGET(childrenIterator->data));
+        gtk_widget_destroy(GTK_WIDGET(childrenIterator->data)); // NOTE: Memory data memory is freed from the LL
     }
 
     // Freeing the memory that was used within the list box children
     g_list_free(listBoxChildren);
-    return true;
 }
 
-// Function to free the windows object when the hashmap is destroyed
-static void _freeWindowsHFileObj(gpointer data) {
-    WINDOWSFILEDATA *objToFree = (WINDOWSFILEDATA*)data;
-    g_free(objToFree);
+void _initialiseFiledataInWindowsPtr(char *directoryString, WINDOWSFILEDATA **ptrptr_filedata, WIN32_FIND_DATA *ptr_volatileFindFileData) {
+    /////////////////////////////////
+    // === ADDING INITIAL NODE === //
+    // Initialize the struct variables
+    memset((*ptrptr_filedata)->fullPathName, 0, sizeof((*ptrptr_filedata)->fullPathName));
+    memset((*ptrptr_filedata)->cAlternateFileName, 0, sizeof((*ptrptr_filedata)->cAlternateFileName));
+    memset((*ptrptr_filedata)->cFileName, 0, sizeof((*ptrptr_filedata)->cFileName));
+    (*ptrptr_filedata)->dwFileAttributes = (*ptr_volatileFindFileData).dwFileAttributes;
+    (*ptrptr_filedata)->ftCreationTime = (*ptr_volatileFindFileData).ftCreationTime;
+    (*ptrptr_filedata)->ftLastAccessTime = (*ptr_volatileFindFileData).ftLastAccessTime;
+    (*ptrptr_filedata)->ftLastWriteTime = (*ptr_volatileFindFileData).ftLastWriteTime;
+    (*ptrptr_filedata)->nFileSizeHigh = (*ptr_volatileFindFileData).nFileSizeHigh;
+    (*ptrptr_filedata)->nFileSizeLow = (*ptr_volatileFindFileData).nFileSizeLow;
+
+    // Copy the content of cAlternateFileName and cFileName to struct
+    strcpy((*ptrptr_filedata)->cAlternateFileName, (*ptr_volatileFindFileData).cAlternateFileName);
+    strcpy((*ptrptr_filedata)->cFileName, (*ptr_volatileFindFileData).cFileName);
+
+    // Copying the full path of the file into the LL object
+    char fullPathNameBuffer[MAX_PATH];
+    snprintf(fullPathNameBuffer, sizeof(fullPathNameBuffer), "%s\\%s", directoryString, (*ptrptr_filedata)->cFileName);
+    strcpy((*ptrptr_filedata)->fullPathName, fullPathNameBuffer); // Need to copy as fullPathNameBuffer memory is removed once the func goes out of scope
 }
 
-// Higher level wrapper for hashmap functionality start ////////////
-void _insertWin32Hashmap(GHashTable *hashmap, char *searchKey, WINDOWSFILEDATA *refFileDataObj) {
-    g_hash_table_insert(hashmap, g_strdup(searchKey), (gpointer)refFileDataObj);
-}
+// NOTE: Make sure to use \\ for strings when using a forwards slash
+void getCurrDirFilesAddToLL(char *directoryString, LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL) {
+    // Clearing any LL nodes if the LL is currently occupied --> Returns only curr dir files in the new LL
+    checkAndClearLL(ptrptr_headLL, ptrptr_tailLL);
 
-WINDOWSFILEDATA *_getRefWin32Hashmap(GHashTable *hashmap, char *searchKey) {
-    WINDOWSFILEDATA *returnedWin32Obj = (WINDOWSFILEDATA*)g_hash_table_lookup(hashmap, searchKey);
-    if(returnedWin32Obj == NULL) {
-        logMessage("Error: Could not get the hashmap value [filechoose.h]");
-        return NULL;
+    // Adding the wildcard to the directory string to search for all files in the directory
+    char wildcardDirString[MAX_PATH];
+    int resultWildcardConcatSize = snprintf(wildcardDirString, sizeof(wildcardDirString), "%s\\*", directoryString); // Copying the wildcard char to the dir
+
+    if (resultWildcardConcatSize >= sizeof(wildcardDirString)) {
+        logMessage("ERROR: Cannot concat a wildcard (*) to the given directory as the total path is > MAX_PATH (260 chars)");
+        return;
     }
-    return returnedWin32Obj;
-}
-// End of hashmap functionality wrapper ///////////////////////////
-
-// Remember: Make sure to use \\ for strings when using a forwards slash
-void getCurrDirFiles(char *directoryString) {
-    // Creating a hashmap to store the files in {stringName:fileObjAddress}
-    GHashTable *currDirHashmap = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, _freeWindowsHFileObj);
 
     // Creating file finding objects [windows.h]
     WIN32_FIND_DATA volatileFindFileData;
-    HANDLE fileSearchHandle = FindFirstFile(_T(directoryString), &volatileFindFileData);
+    HANDLE fileSearchHandle = FindFirstFile(_T(wildcardDirString), &volatileFindFileData);
     if (fileSearchHandle == INVALID_HANDLE_VALUE) {
-        logMessage("Error: Couldn't opening listed directory");
+        logMessage("Error: Couldn't open listed directory");
+        return;
     }
 
-    // _tprintf(_T("RAW: %s\n"), volatileFindFileData.cFileName);
+    //////////////////////////////////
+    // === START OF ADDING NODE === //
     // Acting on the first selected file --> Save to ll based in alphabetical order (head = A | tail = Z)
-    WINDOWSFILEDATA initialFileData = {
-        .cAlternateFileName = {0},
-        .cFileName = {0},
-        .dwFileAttributes = volatileFindFileData.dwFileAttributes,
-        .ftCreationTime = volatileFindFileData.ftCreationTime,
-        .ftLastAccessTime = volatileFindFileData.ftLastAccessTime,
-        .ftLastWriteTime = volatileFindFileData.ftLastWriteTime,
-        .nFileSizeHigh = volatileFindFileData.nFileSizeHigh,
-        .nFileSizeLow = volatileFindFileData.nFileSizeLow,
-    };
-    // Copy the content of cAlternateFileName and cFileName
-    strcpy(initialFileData.cAlternateFileName, volatileFindFileData.cAlternateFileName);
-    strcpy(initialFileData.cFileName, volatileFindFileData.cFileName);
-    _tprintf(_T("TESTER: %s\n"), initialFileData.cFileName);
+    WINDOWSFILEDATA *ptr_initialFileData = (WINDOWSFILEDATA*)malloc((sizeof(WINDOWSFILEDATA))); // Memory to be deallocated after use
+    if (ptr_initialFileData == NULL) {
+        logMessage("ERROR: Failed to assign memory for WINDOWSFILEDATA struct");
+        return;
+    }
 
-    // TODO:
-    // Assign memory for the furtherWindowsFileData variable so that the memory 
-    // isn't freed after being used. The values should be freed when removed from the hash.
+    // Creating a WINDOWSFILEDATA struct for the initial ptr
+    _initialiseFiledataInWindowsPtr(directoryString, &ptr_initialFileData, &volatileFindFileData);
 
+    // Adding the fileData to the linkedlist
+    insertInAlphabeticalFilenameLL(ptrptr_headLL, ptrptr_tailLL, ptr_initialFileData); // ptrptr_xx can be parsed straight because it has already been dereferenced in parent func
+    // === END OF ADDING NODE === //
+    ////////////////////////////////
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    /////////////////////////////////////
+    // === ADDING SUBSEQUENT NODES === //
     // Iterating through all other files in the directory
     FindNextFile(fileSearchHandle, &volatileFindFileData);
     do {
-        WINDOWSFILEDATA furtherWindowsFileData = {
-            .cAlternateFileName = {0},
-            .cFileName = {0},
-            .dwFileAttributes = volatileFindFileData.dwFileAttributes,
-            .ftCreationTime = volatileFindFileData.ftCreationTime,
-            .ftLastAccessTime = volatileFindFileData.ftLastAccessTime,
-            .ftLastWriteTime = volatileFindFileData.ftLastWriteTime,
-            .nFileSizeHigh = volatileFindFileData.nFileSizeHigh,
-            .nFileSizeLow = volatileFindFileData.nFileSizeLow,
-        };
-        // Copy the content of cAlternateFileName and cFileName
-        strcpy(furtherWindowsFileData.cAlternateFileName, volatileFindFileData.cAlternateFileName);
-        strcpy(furtherWindowsFileData.cFileName, volatileFindFileData.cFileName);
+        WINDOWSFILEDATA *ptr_moreWindowFileData = (WINDOWSFILEDATA*)malloc((sizeof(WINDOWSFILEDATA))); // Memory to be deallocated after use
+        if (ptr_moreWindowFileData == NULL) {
+            logMessage("ERROR: Failed to assign memory for WINDOWSFILEDATA struct");
+            return;
+        }
+        // Creating a WINDOWSFILEDATA struct for the other file ptrs
+        _initialiseFiledataInWindowsPtr(directoryString, &ptr_moreWindowFileData, &volatileFindFileData);
 
-        _tprintf(_T("TESTER: %s\n"), furtherWindowsFileData.cFileName);
+        // Adding node to the linkedlist
+        insertInAlphabeticalFilenameLL(ptrptr_headLL, ptrptr_tailLL, ptr_moreWindowFileData);
 
     } while (FindNextFile(fileSearchHandle, &volatileFindFileData) != 0);
-    // _tprintf(_T("TESTER: %s | %s\n"), initialFileData.cFileName, secondData.cFileName);
-    // _tprintf(_T("TESTER: %p | %p\n"), initialFileData.cFileName, secondData.cFileName);
+    // === END OF ADDING ALL OTHER NODES === //
+    ///////////////////////////////////////////
 
-    FindClose(fileSearchHandle);
+    // Func cleanup calls
+    FindClose(fileSearchHandle); // Freeing the memory that is used by the windows.h fileSearchHandle
 }
 
-void displayCurrDirFiles(GtkWidget *mainWindow, GtkWidget *fileListBox) {
+// Adding all of the LL files to the listbox
+void addFileButtonsToScreen(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, GtkWidget *fileListBox, GtkCssProvider *mainCssProvider) {
+    // Removing all previous file buttons
+    removeAllGTKListBoxRows(fileListBox);
 
+    if (*ptrptr_headLL == NULL) {
+        // logMessage("ERROR: Tried to add an empty LL to the screen [filechoose.c]"); --> Don't need this as an error message (e.g empty folders)
+        return;
+    }
 
+    LLNode *currentNode = *ptrptr_headLL;
+    while (currentNode != NULL) {
+        GtkWidget *listButton = gtk_button_new_with_label(currentNode->fileData->cFileName);
+        g_object_set_data(G_OBJECT(listButton), "WINDOWSFILEDATA", currentNode->fileData); // Setting the button data
+        colourWidgetFromStyles(mainCssProvider, listButton, "fileButtons");
+        
+        GtkWidget *listBoxRow = gtk_list_box_row_new();
+        colourWidgetFromStyles(mainCssProvider, listBoxRow, "fileRow");
+        GtkWidget *rowGrid = gtk_grid_new();
+
+        gtk_grid_attach(GTK_GRID(rowGrid), listButton, 0, 2, 1, 1);
+        gtk_container_add(GTK_CONTAINER(listBoxRow), rowGrid);
+        gtk_list_box_insert(GTK_LIST_BOX(fileListBox), listBoxRow, -1);
+    
+        currentNode = currentNode->nextNode; // Moving to the next node in the LL
+    }
 }

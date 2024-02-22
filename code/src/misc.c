@@ -1,10 +1,5 @@
 // OS specific .h includes
-#ifdef _WIN32
 #include <windows.h>
-#elif __linux__
-#include <limits.h>
-#include <unistd.h>
-#endif
 
 // Basic .h includes
 #include <stdio.h>
@@ -13,25 +8,24 @@
 #include "log.h"
 #include <gtk/gtk.h>
 #include <string.h>
+#include <stdint.h>
 
 // The code below is O/S specific
 void getExecDirPathWindows(char pathBuffer[], size_t pathBufferMaxSize) {
-  // Run this code if the compilation system is windows-based
-  #ifdef _WIN32
-    // Apparently the windows max dir address size is 260 bytes
-    DWORD pathSize = GetModuleFileName(NULL, pathBuffer, pathBufferMaxSize); // Windows.h functions will not work correctly if pathBufferMaxSize > 260 bytes
+  // Apparently the windows max dir address size is 260 bytes
+  DWORD pathSize = GetModuleFileName(NULL, pathBuffer, pathBufferMaxSize); // Windows.h functions will not work correctly if pathBufferMaxSize > 260 bytes
 
-    if (pathSize < 1) {
-      logMessage("ERROR: Failed to get module file name (misc.h)");
-      g_print("ERROR: Failed to get module file name (misc.h)");
-    }
+  if (pathSize < 1) {
+    logMessage("ERROR: Failed to get module file name (misc.h)");
+    g_print("ERROR: Failed to get module file name (misc.h)");
+  }
 
-    // Removing the .exe part of the address by switching final \ for a \0 char
-    char *lastBackslashInExeAddress = strrchr(pathBuffer, '\\');
-    if (lastBackslashInExeAddress == NULL) {
-      logMessage("ERROR: Failed to find the last backslash in the .exe address");
-    }
-    *lastBackslashInExeAddress = '\0';
+  // Removing the .exe part of the address by switching final \ for a \0 char
+  char *lastBackslashInExeAddress = strrchr(pathBuffer, '\\');
+  if (lastBackslashInExeAddress == NULL) {
+    logMessage("ERROR: Failed to find the last backslash in the .exe address [misc.c]");
+  }
+  *lastBackslashInExeAddress = '\0';
 }
 
 void appendFileToExecDirWindowsWDoubleBackslash(char *fileLocation, char pathBuffer[], size_t pathBufferMaxSize) {
@@ -43,38 +37,39 @@ void appendFileToExecDirWindowsWDoubleBackslash(char *fileLocation, char pathBuf
 
 }
 
-void getExecDirPathLinux(char pathBuffer[], size_t pathBufferMaxSize) {
-  // Run this code if the compilation system is linux-based
-  #elif __linux__
-    long pathSize = pathconf("/proc/self/exe", _PC_PATH_MAX);
-    if((pathSize <= 0) || (pathSize == -1)) {
-      g_print("ERROR: No memory allocated for executable's true, absolute path");
-      return NULL; // Unable to return path size
+// Checks if powershell is installed on the user's computer | returns 1 = YES | 0 = NO
+uint8_t isPowershellInstalledOnTargetComp() {
+  int result = system("where powershell.exe > nul");
+
+  if (result == 0) {
+    return 1; // Successfully located powershell
+  }
+  return 0;
+}
+
+// Check if a directory exists | returns 1 = YES | 0 = NO | -1 = ERROR
+uint8_t doesDirOrFileExistOnMachine(char *directory) {
+  // Does not care about case sensitivity
+  DWORD fileAttr = GetFileAttributes(directory);
+
+  if (fileAttr != INVALID_FILE_ATTRIBUTES) {
+    return 1; // DOES exist
+  }
+
+  return 0; // DOES NOT exist
+}
+
+// Check if a file location is a directory | returns 1 = YES | 2 = not dir | 0 = NO | -1 = ERROR
+uint8_t isDirLocationValidDir(char *directory) {
+  // Does not care about case sensitivity
+  DWORD fileAttr = GetFileAttributes(directory);
+
+  if (fileAttr != INVALID_FILE_ATTRIBUTES) {
+    if (fileAttr & FILE_ATTRIBUTE_DIRECTORY) {
+      return 1; // DOES exist and is DIR
     }
+    return 2; // DOES exist but is a FILE
+  }
 
-    // Allocating the memory for the executables absolute path (as a string)
-    char *absPath = (char*)malloc(pathSize+1);
-    if(absPath == NULL) {
-      g_print("ERROR: Could not allocate memory based on exe pathSize");
-      return NULL;
-    }
-
-    // readlink returns the number of characters copied excluding the null terminator
-    ssize_t pathStringLetterCount = readlink("/proc/self/exe", absPath, pathSize - 1);
-
-    if(pathStringLetterCount < 0) {
-      free(absPath);
-      g_print("ERROR: Unable to read the path string");
-      return NULL;
-    }
-
-    absPath[pathStringLetterCount] = '\0'; // Null-terminate the string 
-
-    char* dirPath = strdup(absPath); // strdup mallocs new memory for the string. This must be freed as soon as it is not longer in use.
-
-    // Freeing the original buffer
-    free(absPath);
-    return dirPath;
-
-  #endif
+  return 0; // DOES NOT exist OR is NOT DIR
 }
