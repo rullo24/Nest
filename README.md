@@ -6,9 +6,13 @@ Nest is a lightweight, Windows-Only file explorer written in C, designed to prov
 
 ## Features
 
-**Streamlined Simplicity, Enhanced Power**: Drawing on insights from diverse Windows file explorer alternatives, Nest delivers a user-friendly design that seamlessly balances simplicity with advanced functionality. As an open-source solution, Nest fills a crucial niche, offering scalability and versatility to cater to the needs of both casual users and power users.
+- **Streamlined Simplicity, Enhanced Power**: Drawing on insights from diverse Windows file explorer alternatives, Nest delivers a user-friendly design that seamlessly balances simplicity with advanced functionality.
 
 - **Custom Shortcuts:** Tailor your navigation with personalised shortcuts for quick access to frequently used directories.
+
+- **Advanced File Search**: Nest boasts an inbuilt file system searcher that scans the entire system using indexing, offering vastly improved search speeds compared to File Explorer.
+
+- **Open-Source Flexibility**: Nest sets itself apart by being an open-source solution, providing transparency and the opportunity for community-driven innovation.
 
 - **FTP Client:** Easily connect to remote servers using the built-in FTP client, allowing you to manage files both locally and on external servers.
 
