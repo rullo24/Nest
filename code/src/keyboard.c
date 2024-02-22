@@ -5,6 +5,8 @@
 #include <gtk/gtk.h>
 #include "misc.h"
 #include "log.h"
+#include "structs.h"
+#include "filechoose.h"
 
 /////////////////////////////////////////////////////////
 ///////////////// START OF CUSTOM FUNCS /////////////////
@@ -34,10 +36,6 @@ void _changeDirFromAddrBarSpecified(GtkWidget *addrBar, gpointer data) {
 
 
 
-
-
-
-
   }
   else if (dirExistsAsDir == 2) { // Opening the found file
     HINSTANCE fileOpenResult = ShellExecute(NULL, "open", addrBarCurrentText, NULL, NULL, SW_SHOWNORMAL);
@@ -46,6 +44,11 @@ void _changeDirFromAddrBarSpecified(GtkWidget *addrBar, gpointer data) {
       return;
     }
   }
+}
+
+// Opening the file of a button
+void _openFolderOrFileFromButton(GtkWidget *listButton) {
+
 }
 
 ////////////////// END OF CUSTOM FUNCS //////////////////
@@ -67,15 +70,44 @@ gboolean checkForEscKeyEnter(GtkWidget *mainWindow, GdkEventKey *event, gpointer
 }
 
 // Address bar callback function for changing the current dir on enter key press
-gboolean checkForAddrBarEnter(GtkWidget *widget, GdkEventKey *event, gpointer data) {
+gboolean checkForAddrBarEnter(GtkWidget *addrBar, GdkEventKey *event, gpointer data) {
   // Requires the key to be pressed down (not on up) & main or keypad enter key
   if (event->type == GDK_KEY_PRESS && (event->keyval == GDK_KEY_Return || event -> keyval == GDK_KEY_KP_Enter)) {
     // Executing directory change func
-    _changeDirFromAddrBarSpecified(widget, data);
+    _changeDirFromAddrBarSpecified(addrBar, data);
 
     return TRUE; // Mark the event as used
   }
   return FALSE; // Ignore the results of the event if it does not meet the if requirements
+}
+
+// Callback that handles a double clicked file or folder
+gboolean callbackHandleDoubleClickedFileOrFolder(GtkWidget *listButton, GdkEventButton *event, gpointer parsedData)
+{
+    if (event->type == GDK_DOUBLE_BUTTON_PRESS) {
+      WINDOWSFILEDATA *tempFileDataPointer = getFileDataFromButton(listButton);     
+      if (tempFileDataPointer == NULL) {
+        logMessage("ERROR: Empty temp file data pointer [keyboard.c]");
+        return FALSE;
+      }
+
+    uint8_t dirExistsAsDir = isDirLocationValidDir(tempFileDataPointer->fullPathName);
+      if (dirExistsAsDir == 1) { // Moving to this directory
+
+        PTRS_NESTDIRCHANGEDATA *nestNecessaryChangeDirData = (PTRS_NESTDIRCHANGEDATA*)parsedData;
+        strcpy(*(nestNecessaryChangeDirData->ptr_nestAppDirectory), (tempFileDataPointer->fullPathName)); // Copying the full path string to the nest app directory var located in main.c
+        uint8_t refreshResult = refreshNewFileDisplayFromLL(nestNecessaryChangeDirData->ptr_nestAppDirectory, nestNecessaryChangeDirData->ptrptr_headLL, nestNecessaryChangeDirData->ptrptr_tailLL, nestNecessaryChangeDirData->fileListBox, nestNecessaryChangeDirData->mainCssProvider);
+
+      }
+      else if (dirExistsAsDir == 2) { // Opening the found file
+        HINSTANCE fileOpenResult = ShellExecute(NULL, "open", tempFileDataPointer->fullPathName, NULL, NULL, SW_SHOWNORMAL);
+        if (fileOpenResult <= (HINSTANCE)32) {
+          logMessage("ERROR: Failed to open the button's file [keyboard.c]");
+          return FALSE;
+        }
+      }
+    }
+    return TRUE;
 }
 
 ///////////////// END OF CALLBACK FUNCS /////////////////

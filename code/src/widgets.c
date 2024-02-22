@@ -22,11 +22,6 @@ void initWINDOWSIZESTRUCT (GtkWidget *mainWindow, struct WINDOWSIZESTRUCT *windo
   windowSize->windowHeight = height;
 }
 
-// Getting the data from a button
-// WINDOWSFILEDATA *getFileDataFromButton(GtkWidget *parsedButton) {
-
-// }
-
 // Functions to make syntax easier on the eye when reading larger functions
 GtkWidget* createSizedVertBox(int edgeSpacing) {
   return gtk_box_new(GTK_ORIENTATION_VERTICAL, edgeSpacing);
@@ -38,10 +33,11 @@ GtkWidget* createSizedHorzPane() {
   return gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
 }
 
-void layoutBaseApp(GtkWidget* mainWindow, LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL) {
+void layoutBaseApp(GtkWidget* mainWindow, LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, char **ptr_nestStartingDir) {
   // Generaating the window's css style provider object
   GtkCssProvider *mainCssProvider = loadCssProviderAndStyles();  // Gathering the Working Area for use in widget scaling
   colourWidgetFromStyles(mainCssProvider, mainWindow, "mainWindow");
+  getCurrDirFilesAddToLL(*ptr_nestStartingDir, ptrptr_headLL, ptrptr_tailLL); // Adding the initial files to the explorer
 
   // Holding the current window's sizing
   int workingAreaHeight = getWindowWorkAreaHeight();
@@ -73,7 +69,7 @@ void layoutBaseApp(GtkWidget* mainWindow, LLNode **ptrptr_headLL, LLNode **ptrpt
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledWindow), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   GtkWidget *fileListBox = gtk_list_box_new();
   gtk_container_add(GTK_CONTAINER(scrolledWindow), fileListBox);
-  addFileButtonsToScreen(ptrptr_headLL, ptrptr_tailLL, fileListBox, mainCssProvider); // Moving files to the listbox
+  addFileButtonsToScreen(ptrptr_headLL, ptrptr_tailLL, fileListBox, mainCssProvider, ptr_nestStartingDir); // Moving files to the listbox
   colourWidgetFromStyles(mainCssProvider, fileListBox, "fileListBox");
 
   // Adding widgets to the right vertical box

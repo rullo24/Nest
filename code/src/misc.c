@@ -9,6 +9,26 @@
 #include <gtk/gtk.h>
 #include <string.h>
 #include <stdint.h>
+#include "structs.h"
+#include "..\tomlc99\toml.h"
+
+// Grabbing settings from the TOML file
+NESTSETTINGS grabNestSettings() {
+  NESTSETTINGS nestSettings = {0}; // Sets all instances to NULL to start off with
+  
+  // Getting the exact location of the settings file
+  char filepathBuffer[260];
+  appendFileToExecDirWindowsWDoubleBackslash("\\settings.toml", filepathBuffer, sizeof(filepathBuffer));
+
+  FILE *settingsFileObj = fopen(filepathBuffer, "r");
+  if (!settingsFileObj) {
+    logMessage("ERROR: Could not retrieve the settings file [misc.c]");
+  }
+  // Accessing values of the TOML file and assigning to their counterpart in the settings struct
+
+  return nestSettings;
+
+}
 
 // The code below is O/S specific
 void getExecDirPathWindows(char pathBuffer[], size_t pathBufferMaxSize) {

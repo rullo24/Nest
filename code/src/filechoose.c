@@ -1,4 +1,5 @@
 #include <gtk/gtk.h>
+#include <stdlib.h>
 #include <glib.h>
 #include <tchar.h>
 #include <stdio.h>
@@ -9,6 +10,56 @@
 #include "log.h"
 #include "colours.h"
 #include "structs.h"
+#include "keyboard.h"
+#include <glib.h>
+
+// Debugging list box
+void _debug_printNumOfListBoxRows(GtkWidget *fileListBox) {
+    // Get all of the children widgets within the list box   
+    GList *listBoxChildren = gtk_container_get_children(GTK_CONTAINER(fileListBox));
+    if (listBoxChildren == NULL) { // Returns NULL if the listbox is empty
+        printf("None");
+        return;
+    }
+
+    // Iterating through each child widget and removing it from the list box
+    GList *childrenIterator;
+    for(childrenIterator = listBoxChildren; childrenIterator != NULL; childrenIterator = g_list_next(childrenIterator)) {
+        GtkWidget *childWidget = GTK_WIDGET(childrenIterator->data);
+        printf("Widget Type: %s\n", g_type_name(G_OBJECT_TYPE(childWidget)));
+
+        if (GTK_IS_BUTTON(childWidget)){
+            const gchar *buttonLabel = gtk_button_get_label(GTK_BUTTON(childWidget));
+            printf("Button Label: %s\n", buttonLabel);
+        }
+        printf("1x child found\n");
+    }
+
+    // Freeing the memory that was used within the list box children
+    g_list_free(listBoxChildren);
+}
+
+// Refreshing each row in the listbox
+void _refreshEachRowListBoxDuringRuntime(GtkWidget *fileListBox) {
+    // Get all of the children widgets within the list box   
+    GList *listBoxChildren = gtk_container_get_children(GTK_CONTAINER(fileListBox));
+    if (listBoxChildren == NULL) { // Returns NULL if the listbox is empty
+        printf("None");
+        return;
+    }
+
+    // Iterating through each child widget and removing it from the list box
+    GList *childrenIterator;
+    for(childrenIterator = listBoxChildren; childrenIterator != NULL; childrenIterator = g_list_next(childrenIterator)) {
+        GtkWidget *childWidget = GTK_WIDGET(childrenIterator->data);
+        printf("Widget Type: %s\n", g_type_name(G_OBJECT_TYPE(childWidget)));
+        gtk_widget_queue_draw(childWidget);
+        printf("1x child found\n");
+    }
+
+    // Freeing the memory that was used within the list box children
+    g_list_free(listBoxChildren);
+}
 
 // Just removes previous buttons. Does not deal with the underlying data LL
 void removeAllGTKListBoxRows(GtkWidget *fileListBox) {
@@ -21,7 +72,8 @@ void removeAllGTKListBoxRows(GtkWidget *fileListBox) {
     // Iterating through each child widget and removing it from the list box
     GList *childrenIterator;
     for(childrenIterator = listBoxChildren; childrenIterator != NULL; childrenIterator = g_list_next(childrenIterator)) {
-        gtk_widget_destroy(GTK_WIDGET(childrenIterator->data)); // NOTE: Memory data memory is freed from the LL
+        GtkWidget *listBoxRow = GTK_WIDGET(childrenIterator->data);
+        gtk_widget_destroy(listBoxRow); // NOTE: Button data memory is freed by the LL
     }
 
     // Freeing the memory that was used within the list box children
@@ -116,7 +168,9 @@ void getCurrDirFilesAddToLL(char *directoryString, LLNode **ptrptr_headLL, LLNod
 }
 
 // Adding all of the LL files to the listbox
-void addFileButtonsToScreen(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, GtkWidget *fileListBox, GtkCssProvider *mainCssProvider) {
+void addFileButtonsToScreen(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, GtkWidget *fileListBox, GtkCssProvider *mainCssProvider, char **ptr_nestAppDirectory) {
+    printf("STARTING\n");   
+
     // Removing all previous file buttons
     removeAllGTKListBoxRows(fileListBox);
 
@@ -129,16 +183,60 @@ void addFileButtonsToScreen(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, GtkW
     while (currentNode != NULL) {
         GtkWidget *listButton = gtk_button_new_with_label(currentNode->fileData->cFileName);
         g_object_set_data(G_OBJECT(listButton), "WINDOWSFILEDATA", currentNode->fileData); // Setting the button data
+
+        PTRS_NESTDIRCHANGEDATA *nestNecessaryChangeDirData = (PTRS_NESTDIRCHANGEDATA*)malloc(sizeof(PTRS_NESTDIRCHANGEDATA));
+        if (nestNecessaryChangeDirData == NULL) {
+            logMessage("ERROR: Failed to malloc memory for the PTRS_NESTDIRCHANGEDATA struct [filechoose.c]");
+            return;
+        }
+
+        nestNecessaryChangeDirData->ptr_nestAppDirectory = ptr_nestAppDirectory;
+        nestNecessaryChangeDirData->ptrptr_headLL = ptrptr_headLL;
+        nestNecessaryChangeDirData->ptrptr_tailLL = ptrptr_tailLL;
+        nestNecessaryChangeDirData->fileListBox = fileListBox;
+        nestNecessaryChangeDirData->mainCssProvider = mainCssProvider;
+  
+        g_signal_connect(listButton, "button-press-event", G_CALLBACK(callbackHandleDoubleClickedFileOrFolder), nestNecessaryChangeDirData);
         colourWidgetFromStyles(mainCssProvider, listButton, "fileButtons");
         
         GtkWidget *listBoxRow = gtk_list_box_row_new();
         colourWidgetFromStyles(mainCssProvider, listBoxRow, "fileRow");
         GtkWidget *rowGrid = gtk_grid_new();
 
+        WINDOWSFILEDATA *buttonData = g_object_get_data(G_OBJECT(listButton), "WINDOWSFILEDATA");
+        printf("%s\n", buttonData->cFileName);
+        
         gtk_grid_attach(GTK_GRID(rowGrid), listButton, 0, 2, 1, 1);
         gtk_container_add(GTK_CONTAINER(listBoxRow), rowGrid);
         gtk_list_box_insert(GTK_LIST_BOX(fileListBox), listBoxRow, -1);
     
         currentNode = currentNode->nextNode; // Moving to the next node in the LL
     }
+}
+
+// Reposting the LL buttons onto the right side of the screen -> return 1 = SUCCESS
+uint8_t refreshNewFileDisplayFromLL(char **ptr_newDirectory, LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, GtkWidget *fileListBox, GtkCssProvider *mainCssProvider) {
+    // Add files from the new directory to the (now empty) LL | also, removing all data in the current file LL (calls clearAndCheckLL internally)
+    getCurrDirFilesAddToLL(*ptr_newDirectory, ptrptr_headLL, ptrptr_tailLL);
+
+    // Remove all old buttons and create new ones from the new LL data
+    addFileButtonsToScreen(ptrptr_headLL, ptrptr_tailLL, fileListBox, mainCssProvider, ptr_newDirectory); 
+
+    // Need to refresh each row in the list box
+
+
+    // Refreshing the screen to display the new file/folder buttons
+    gtk_widget_queue_draw(fileListBox);
+
+    return 1;
+}
+
+// Getting the data from a button
+WINDOWSFILEDATA *getFileDataFromButton(GtkWidget *parsedButton) {
+    WINDOWSFILEDATA *buttonData = g_object_get_data(G_OBJECT(parsedButton), "WINDOWSFILEDATA");
+    if (buttonData == NULL) {
+        logMessage("ERROR: Failed to get the button's data [keyboard.c]");
+        return NULL;
+    }
+    return buttonData;
 }

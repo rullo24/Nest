@@ -141,7 +141,7 @@ void insertInAlphabeticalFilenameLL(LLNode **ptrptr_headLL, LLNode **ptrptr_tail
 // Removing the end LL node -> Requires a double pointer otherwise the ptr_headLL & tail will not be changed outside of the function scope 
 void removeLastNodeLL(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL) {
     if (*ptrptr_headLL == NULL) {
-        logMessage("ERROR: Tried to remove a node from an empty LL");
+        logMessage("ERROR: Tried to remove a node from an empty LL [linkedlist.c]");
         return;
     }
 
@@ -152,9 +152,10 @@ void removeLastNodeLL(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL) {
 
     // Working on a single-node LL
     if((*ptrptr_tailLL)->prevNode == NULL) {
+        WINDOWSFILEDATA *tempFileData = (*ptrptr_tailLL)->fileData;
+        free(tempFileData); // Freeing the file data memory that is stored in the last node of the LL
         free(*ptrptr_tailLL); // Freeing the memory allocated to the struct that the pointer points to
-        // Don't need to free() the head as it is the same memory as the tail
-        *ptrptr_tailLL = *ptrptr_headLL = NULL;
+        *ptrptr_tailLL = *ptrptr_headLL = NULL; // Don't need to free() the head as it is the same memory as the tail
     }
     // Working on a LL larger than 1 node
     else {
@@ -223,13 +224,13 @@ void debug_printEntireLLFileName(LLNode *ptr_headLL) {
     
     // Printing the file name of the first node
     g_print("\n=== START OF LL ===\n");
-    g_print("\nHead Data: %s", ptr_headLL->fileData->cFileName);
+    g_print("\nHead Data: %s", ptr_headLL->fileData->fullPathName);
 
     // Assigning an iterating pointer to cycle through all nodes in the LL
     LLNode *ptr_iterHead = ptr_headLL;
     while(ptr_iterHead->nextNode != NULL) {
         ptr_iterHead = ptr_iterHead->nextNode;
-        g_print("\nNode Data: %s", ptr_iterHead->fileData->cFileName);
+        g_print("\nNode Data: %s", ptr_iterHead->fileData->fullPathName);
     }
     g_print("\n\n=== END OF LL ===\n");
 }

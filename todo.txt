@@ -1,8 +1,8 @@
 todo:
 - Use the address bar + enter key to move dir
-    --> Currently only opens files
+    --> Currently only opens files [keyboard.c]
 - Set the address bar to show the current dir
-    --> Remove the current dir display when clicked on
+    --> Remove the current dir display when clicked on [toolbar.c]
 - Address bar requires buttons for each parent dir above the current
 - when button is double clicked, change dir to the next dir (or open if a file)
 - need to free the memory that is taken by the buttons for the data

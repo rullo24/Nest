@@ -1,0 +1,4 @@
+[Default_Sizes]
+Main_Window_X_Size = 2000
+Main_Window_Y_Size = 1500
+Left_Favourites_Box_Ratio = 0.2 # The right box takes the inverse

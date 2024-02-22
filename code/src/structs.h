@@ -16,13 +16,19 @@ typedef struct {
     DWORD       nFileSizeLow;
 } WINDOWSFILEDATA;
 
+// Holds the app's settings
+typedef struct {
+  int             startWindowSizeX;
+  int             startWindowSizeY;
+  float           startLeftRightBoxRatio;
+} NESTSETTINGS;
+
 // Linked-list node
 typedef struct LLNode {
     WINDOWSFILEDATA *fileData;
     struct LLNode *nextNode;
     struct LLNode *prevNode;
 } LLNode;
-
 // A structure that is used to hold the window's width and height
 struct WINDOWSIZESTRUCT {
   int windowWidth;
@@ -33,5 +39,14 @@ struct WINDOWSIZESTRUCT {
 typedef struct {
   GtkWidget *extIconImage;
 } IconImageData;
+
+// Stores the required data for a Nest app dir change
+typedef struct {
+  char            **ptr_nestAppDirectory;
+  LLNode          **ptrptr_headLL;
+  LLNode          **ptrptr_tailLL;
+  GtkWidget       *fileListBox;
+  GtkCssProvider  *mainCssProvider;
+} PTRS_NESTDIRCHANGEDATA;
 
 #endif
