@@ -10,7 +10,7 @@
 
 int main(int argc, char** argv) {
   // Parsing all TOML settings into a usable struct
-  NESTSETTINGS nestSettings = grabNestSettings(); // NEEDS TO BE COMPLETED
+  // NESTSETTINGS nestSettings = grabNestSettings(); // NEEDS TO BE COMPLETED
 
   // Check if powershell is downloaded on the targets computer --> Required for several commands
   uint8_t powershellInstalledResult = isPowershellInstalledOnTargetComp();

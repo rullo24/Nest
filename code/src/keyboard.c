@@ -97,7 +97,6 @@ gboolean callbackHandleDoubleClickedFileOrFolder(GtkWidget *listButton, GdkEvent
         PTRS_NESTDIRCHANGEDATA *nestNecessaryChangeDirData = (PTRS_NESTDIRCHANGEDATA*)parsedData;
         strcpy(*(nestNecessaryChangeDirData->ptr_nestAppDirectory), (tempFileDataPointer->fullPathName)); // Copying the full path string to the nest app directory var located in main.c
         uint8_t refreshResult = refreshNewFileDisplayFromLL(nestNecessaryChangeDirData->ptr_nestAppDirectory, nestNecessaryChangeDirData->ptrptr_headLL, nestNecessaryChangeDirData->ptrptr_tailLL, nestNecessaryChangeDirData->fileListBox, nestNecessaryChangeDirData->mainCssProvider);
-
       }
       else if (dirExistsAsDir == 2) { // Opening the found file
         HINSTANCE fileOpenResult = ShellExecute(NULL, "open", tempFileDataPointer->fullPathName, NULL, NULL, SW_SHOWNORMAL);

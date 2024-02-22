@@ -72,7 +72,10 @@ void removeAllGTKListBoxRows(GtkWidget *fileListBox) {
     // Iterating through each child widget and removing it from the list box
     GList *childrenIterator;
     for(childrenIterator = listBoxChildren; childrenIterator != NULL; childrenIterator = g_list_next(childrenIterator)) {
-        GtkWidget *listBoxRow = GTK_WIDGET(childrenIterator->data);
+        GtkWidget *listBoxRow = GTK_WIDGET(childrenIterator->data); // Get each list row
+        GtkWidget *listButton = gtk_grid_get_child_at(GTK_GRID(gtk_bin_get_child(GTK_BIN(listBoxRow))), 0, 2); // Get the button widget from the row
+
+        gtk_widget_destroy(listButton);
         gtk_widget_destroy(listBoxRow); // NOTE: Button data memory is freed by the LL
     }
 
@@ -169,8 +172,6 @@ void getCurrDirFilesAddToLL(char *directoryString, LLNode **ptrptr_headLL, LLNod
 
 // Adding all of the LL files to the listbox
 void addFileButtonsToScreen(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, GtkWidget *fileListBox, GtkCssProvider *mainCssProvider, char **ptr_nestAppDirectory) {
-    printf("STARTING\n");   
-
     // Removing all previous file buttons
     removeAllGTKListBoxRows(fileListBox);
 
@@ -190,25 +191,24 @@ void addFileButtonsToScreen(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, GtkW
             return;
         }
 
+        // Storing data to pass to the callback function
         nestNecessaryChangeDirData->ptr_nestAppDirectory = ptr_nestAppDirectory;
         nestNecessaryChangeDirData->ptrptr_headLL = ptrptr_headLL;
         nestNecessaryChangeDirData->ptrptr_tailLL = ptrptr_tailLL;
         nestNecessaryChangeDirData->fileListBox = fileListBox;
         nestNecessaryChangeDirData->mainCssProvider = mainCssProvider;
   
-        g_signal_connect(listButton, "button-press-event", G_CALLBACK(callbackHandleDoubleClickedFileOrFolder), nestNecessaryChangeDirData);
+        g_signal_connect(listButton, "button-press-event", G_CALLBACK(callbackHandleDoubleClickedFileOrFolder), nestNecessaryChangeDirData); // Attaching callback to double-click action
         colourWidgetFromStyles(mainCssProvider, listButton, "fileButtons");
         
         GtkWidget *listBoxRow = gtk_list_box_row_new();
         colourWidgetFromStyles(mainCssProvider, listBoxRow, "fileRow");
         GtkWidget *rowGrid = gtk_grid_new();
-
-        WINDOWSFILEDATA *buttonData = g_object_get_data(G_OBJECT(listButton), "WINDOWSFILEDATA");
-        printf("%s\n", buttonData->cFileName);
         
         gtk_grid_attach(GTK_GRID(rowGrid), listButton, 0, 2, 1, 1);
         gtk_container_add(GTK_CONTAINER(listBoxRow), rowGrid);
         gtk_list_box_insert(GTK_LIST_BOX(fileListBox), listBoxRow, -1);
+        gtk_widget_show_all(listBoxRow); // This is require to reshow the widget during runtime --> show_all() recursively shows all children
     
         currentNode = currentNode->nextNode; // Moving to the next node in the LL
     }
@@ -220,13 +220,7 @@ uint8_t refreshNewFileDisplayFromLL(char **ptr_newDirectory, LLNode **ptrptr_hea
     getCurrDirFilesAddToLL(*ptr_newDirectory, ptrptr_headLL, ptrptr_tailLL);
 
     // Remove all old buttons and create new ones from the new LL data
-    addFileButtonsToScreen(ptrptr_headLL, ptrptr_tailLL, fileListBox, mainCssProvider, ptr_newDirectory); 
-
-    // Need to refresh each row in the list box
-
-
-    // Refreshing the screen to display the new file/folder buttons
-    gtk_widget_queue_draw(fileListBox);
+    addFileButtonsToScreen(ptrptr_headLL, ptrptr_tailLL, fileListBox, mainCssProvider, ptr_newDirectory); // Screen refresh done within this function
 
     return 1;
 }
