@@ -32,14 +32,6 @@ Nest is a lightweight, Windows-Only file explorer written in C, designed to prov
     ./Nest
     ```
 
-## Usage
-
-- **Navigate:** Use the intuitive UI to explore and manage your local and remote files effortlessly.
-
-- **Shortcuts:** Boost your productivity with custom shortcuts configured to your workflow.
-
-- **FTP Integration:** Seamlessly transfer files between your local machine and remote servers.
-
 ## Feedback
 
 Feel free to open issues for bug reports or feature requests. Contributions are also welcome!
