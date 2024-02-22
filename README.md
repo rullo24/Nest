@@ -2,7 +2,7 @@
 
 > **IMPORTANT NOTE:**: Nest is still in development so many of the below mentioned features are not yet implemented
 
-Nest is a lightweight file explorer written in C, designed to provide a seamless and customisable experience for navigating both local and remote file systems.
+Nest is a lightweight, Windows-Only file explorer written in C, designed to provide a seamless and customisable experience for navigating both local and remote file systems.
 
 ## Features
 
