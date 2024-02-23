@@ -9,8 +9,7 @@
 #include <gtk/gtk.h>
 #include <string.h>
 #include <stdint.h>
-#include "structs.h"
-#include "..\tomlc99\toml.h"
+#include "cStructs.h"
 
 // Grabbing settings from the TOML file
 NESTSETTINGS grabNestSettings() {

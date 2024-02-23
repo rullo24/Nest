@@ -36,7 +36,7 @@ GtkToolItem* createToolbarButton(GtkCssProvider *mainCssProvider, char *buttonNa
   }
 }
 
-GtkWidget* createToolbar(GtkWidget *mainWindow, GtkCssProvider *mainCssProvider, int toolbarHeight) {
+GtkWidget* createToolbar(GtkWidget *mainWindow, GtkCssProvider *mainCssProvider, int toolbarHeight, char **ptr_nestAppDirectory) {
 
   // Creating the toolbar object to hold all required buttons
   GtkWidget *mainToolbar = gtk_toolbar_new();
@@ -57,7 +57,9 @@ GtkWidget* createToolbar(GtkWidget *mainWindow, GtkCssProvider *mainCssProvider,
   GtkWidget *addressBar = gtk_entry_new();
   GtkToolItem *addressBarToolItem = gtk_tool_item_new();
   gtk_container_add(GTK_CONTAINER(addressBarToolItem), addressBar);
+
   g_signal_connect(addressBar, "key-press-event", G_CALLBACK(checkForAddrBarEnter), NULL);
+
   colourWidgetFromStyles(mainCssProvider, addressBar, "addressBar"); // Used to change the font and size of text in the entry box
 
   GtkWidget *searchBar = gtk_entry_new();

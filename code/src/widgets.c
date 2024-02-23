@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <gtk/gtk.h>
 #include <windows.h>
-#include "structs.h"
+#include "cStructs.h"
 #include <tchar.h>
 #include <strings.h>
 #include "window.h"
@@ -54,7 +54,7 @@ void layoutBaseApp(GtkWidget* mainWindow, LLNode **ptrptr_headLL, LLNode **ptrpt
 
   // Creating all widgets and defining their properties
   int toolbarHeight = workingAreaHeight/25; // 1:25
-  GtkWidget *mainToolbar = createToolbar(mainWindow, mainCssProvider, toolbarHeight);
+  GtkWidget *mainToolbar = createToolbar(mainWindow, mainCssProvider, toolbarHeight, ptr_nestStartingDir);
   colourWidgetFromStyles(mainCssProvider, mainToolbar, "mainToolbar");
 
   int tipsbarHeight = workingAreaHeight/60; // 1:60

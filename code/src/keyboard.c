@@ -5,7 +5,7 @@
 #include <gtk/gtk.h>
 #include "misc.h"
 #include "log.h"
-#include "structs.h"
+#include "cStructs.h"
 #include "filechoose.h"
 
 /////////////////////////////////////////////////////////
@@ -22,14 +22,32 @@ gboolean _checkMainWindowKeystrokeForExitKey(GtkWidget *mainWindow, GdkEventKey 
 }
 
 // Changing directory if addr bar holds a dir
-void _changeDirFromAddrBarSpecified(GtkWidget *addrBar, gpointer data) {
+void _changeDirFromAddrBarSpecified(GtkWidget *addrBar, gpointer parsedData) {
   const gchar *addrBarCurrentTextGchar = gtk_entry_get_text(GTK_ENTRY(addrBar));
   char *addrBarCurrentText = (char*)addrBarCurrentTextGchar;
   uint8_t dirExistsAsDir = isDirLocationValidDir(addrBarCurrentText);
-  if (dirExistsAsDir == 1) { // Acting on a found dir
-    // Move to the new directory
-  
+  if (dirExistsAsDir == 1) { // Move to the new directory
 
+    // Change dir string in main.c
+
+    // Remove all buttons --> free
+
+    // Remove all nodes in LL --> free
+
+    // Add new nodes from new dir
+
+    // Add new buttons from the new nodes
+
+
+
+      
+
+
+
+
+
+
+      
 
 
 
@@ -44,11 +62,6 @@ void _changeDirFromAddrBarSpecified(GtkWidget *addrBar, gpointer data) {
       return;
     }
   }
-}
-
-// Opening the file of a button
-void _openFolderOrFileFromButton(GtkWidget *listButton) {
-
 }
 
 ////////////////// END OF CUSTOM FUNCS //////////////////
@@ -94,9 +107,14 @@ gboolean callbackHandleDoubleClickedFileOrFolder(GtkWidget *listButton, GdkEvent
     uint8_t dirExistsAsDir = isDirLocationValidDir(tempFileDataPointer->fullPathName);
       if (dirExistsAsDir == 1) { // Moving to this directory
 
+        // ADD THIS TO BUTTON DATA SO THAT IT CAN BE FREED WITH THE DATA??? ADD TO STRUCT???
         PTRS_NESTDIRCHANGEDATA *nestNecessaryChangeDirData = (PTRS_NESTDIRCHANGEDATA*)parsedData;
         strcpy(*(nestNecessaryChangeDirData->ptr_nestAppDirectory), (tempFileDataPointer->fullPathName)); // Copying the full path string to the nest app directory var located in main.c
         uint8_t refreshResult = refreshNewFileDisplayFromLL(nestNecessaryChangeDirData->ptr_nestAppDirectory, nestNecessaryChangeDirData->ptrptr_headLL, nestNecessaryChangeDirData->ptrptr_tailLL, nestNecessaryChangeDirData->fileListBox, nestNecessaryChangeDirData->mainCssProvider);
+        if (refreshResult != 1) {
+          logMessage("Failed to refresh file display from LL [keyboard.c]");
+          return FALSE;
+        }
       }
       else if (dirExistsAsDir == 2) { // Opening the found file
         HINSTANCE fileOpenResult = ShellExecute(NULL, "open", tempFileDataPointer->fullPathName, NULL, NULL, SW_SHOWNORMAL);

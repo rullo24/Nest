@@ -6,9 +6,9 @@
 #include "keyboard.h"
 
 
-GtkWidget* generateWindow(int *ref_argc, char** *ref_argv) {
+GtkWidget* generateWindow() {
   // Initialize GTK
-  gtk_init(ref_argc, ref_argv);
+  gtk_init(NULL, NULL);
 
   // Create the main window
   GtkWidget* mainWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);

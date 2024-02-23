@@ -9,7 +9,7 @@
 #include "linkedlist.h"
 #include "log.h"
 #include "colours.h"
-#include "structs.h"
+#include "cStructs.h"
 #include "keyboard.h"
 #include <glib.h>
 

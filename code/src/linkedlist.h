@@ -1,6 +1,6 @@
 #ifndef LL_H
 #define LL_H
-#include "structs.h"
+#include "cStructs.h"
 #include <stdint.h>
 
 // Example of LL setup

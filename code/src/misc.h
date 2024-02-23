@@ -1,7 +1,7 @@
 #ifndef MISC_H
 #define MISC_H
 
-#include "structs.h"
+#include "cStructs.h"
 #include <stdint.h>
 
 NESTSETTINGS grabNestSettings();

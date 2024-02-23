@@ -3,7 +3,7 @@
 
 #include <gtk/gtk.h>
 
-GtkWidget* generateWindow(int *ref_argc, char** *ref_argv);
+GtkWidget* generateWindow();
 int setWindowSizeFromRes(GtkWidget *mainWindow);
 void getWindowWorkArea(int *ref_ResWidth, int *ref_ResHeight);
 int getWindowWorkAreaHeight();

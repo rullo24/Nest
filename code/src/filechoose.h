@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include "linkedlist.h"
 #include <windows.h>
-#include "structs.h"
+#include "cStructs.h"
 #include <gtk/gtk.h>
 
 void removeAllGTKListBoxRows(GtkWidget *fileListBox);
