@@ -7,9 +7,9 @@
 #include <gtk/gtk.h>
 
 void removeAllGTKListBoxRows(GtkWidget *fileListBox);
-void getCurrDirFilesAddToLL(char *directoryString, LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL);
-void addFileButtonsToScreen(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, GtkWidget *fileListBox, GtkCssProvider *mainCssProvider, char **ptr_nestAppDirectory);
-uint8_t refreshNewFileDisplayFromLL(char **ptr_newDirectory, LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, GtkWidget *fileListBox, GtkCssProvider *mainCssProvider);
+void getCurrDirFilesAddToLL(PROGRAMHEAPMEM **ptr_uniHeapMem);
+void addFileButtonsToScreen(PROGRAMHEAPMEM **ptr_uniHeapMem, GtkWidget *fileListBox);
+uint8_t refreshNewFileDisplayFromLL(PROGRAMHEAPMEM **ptr_uniHeapMem, GtkWidget *fileListBox);
 WINDOWSFILEDATA *getFileDataFromButton(GtkWidget *parsedButton);
 
 #endif

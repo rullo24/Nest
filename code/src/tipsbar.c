@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <gtk/gtk.h>
 #include "tipsbar.h"
+#include "cStructs.h"
 
-GtkWidget* createTipsbar(GtkWidget *mainWindow, int tipsbarHeight) {
+// GtkWidget* createTipsbar(GtkWidget *mainWindow, int tipsbarHeight) {
+GtkWidget* createTipsbar(int tipsbarHeight) {
   // Creating the tipsbar (the bottom toolbar)
   GtkWidget *mainTipsbar = gtk_toolbar_new();
   gtk_container_set_border_width(GTK_CONTAINER(mainTipsbar), 5);

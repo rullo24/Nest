@@ -3,6 +3,7 @@
 #include <gtk/gtk.h>
 #include "log.h"
 #include "misc.h"
+#include "cStructs.h"
 
 // Should be run last after all buttons have been created
 GtkCssProvider* loadCssProviderAndStyles() {
@@ -26,12 +27,15 @@ GtkCssProvider* loadCssProviderAndStyles() {
   return cssProvider;
 }
 
-void colourWidgetFromStyles(GtkCssProvider *cssProvider, GtkWidget *selectedWidget, char *selectedWidgetName) {
+void colourWidgetFromStyles(PROGRAMHEAPMEM **ptr_uniHeapMem, GtkWidget *selectedWidget, char *selectedWidgetName) {
+  // Creating an alias for the double pointer pass
+  PROGRAMHEAPMEM *uniHeapMem = *ptr_uniHeapMem;
+
   // Setting the name of the widget in the css file to adhere to style standards
   gtk_widget_set_name(selectedWidget, selectedWidgetName); 
 
   // Getting the widget's current style object for alteration
   GtkStyleContext *selectedWidgetContext = gtk_widget_get_style_context(selectedWidget);
-  gtk_style_context_add_provider(selectedWidgetContext, GTK_STYLE_PROVIDER(cssProvider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+  gtk_style_context_add_provider(selectedWidgetContext, GTK_STYLE_PROVIDER(uniHeapMem->mainCssProvider), GTK_STYLE_PROVIDER_PRIORITY_USER);
 }
 

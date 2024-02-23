@@ -53,11 +53,8 @@ struct IconImageData {
 };
 
 struct PTRS_NESTDIRCHANGEDATA {
-  char            **ptr_nestAppDirectory;
-  LLNode          **ptrptr_headLL;
-  LLNode          **ptrptr_tailLL;
+  PROGRAMHEAPMEM  *uniHeapMem;
   GtkWidget       *fileListBox;
-  GtkCssProvider  *mainCssProvider;
 };
 
 struct PROGRAMHEAPMEM {

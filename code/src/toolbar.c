@@ -5,7 +5,10 @@
 #include "colours.h"
 #include "keyboard.h"
 
-GtkToolItem* createToolbarButton(GtkCssProvider *mainCssProvider, char *buttonNameAsString, char *pathFromExecDir, int toolbarHeight) {
+GtkToolItem* createToolbarButton(PROGRAMHEAPMEM **ptr_uniHeapMem, char *buttonNameAsString, char *pathFromExecDir, int toolbarHeight) {
+  // Creating an alias for the double pointer
+  PROGRAMHEAPMEM *uniHeapMem = *ptr_uniHeapMem;
+
   // Create some toolbar items
   char pathImageLocation[260];
   getExecDirPathWindows(pathImageLocation, sizeof(pathImageLocation));
@@ -25,7 +28,7 @@ GtkToolItem* createToolbarButton(GtkCssProvider *mainCssProvider, char *buttonNa
 
     // Create a GtkToolItem and set its properties
     GtkWidget *mainToolbarStdButton = gtk_button_new();
-    colourWidgetFromStyles(mainCssProvider, mainToolbarStdButton, buttonNameAsString);
+    colourWidgetFromStyles(&uniHeapMem, mainToolbarStdButton, buttonNameAsString);
     GtkToolItem *mainToolbarButtonToolItem = gtk_tool_item_new();
 
     gtk_button_set_image(GTK_BUTTON(mainToolbarStdButton), pngImage);
@@ -36,7 +39,10 @@ GtkToolItem* createToolbarButton(GtkCssProvider *mainCssProvider, char *buttonNa
   }
 }
 
-GtkWidget* createToolbar(GtkWidget *mainWindow, GtkCssProvider *mainCssProvider, int toolbarHeight, char **ptr_nestAppDirectory) {
+// GtkWidget* createToolbar(GtkWidget *mainWindow, GtkCssProvider *mainCssProvider, int toolbarHeight, char **ptr_nestAppDirectory) {
+GtkWidget* createToolbar(PROGRAMHEAPMEM **ptr_uniHeapMem, int toolbarHeight) {
+  // Creating an alias for the double pointer
+  PROGRAMHEAPMEM *uniHeapMem = *ptr_uniHeapMem;
 
   // Creating the toolbar object to hold all required buttons
   GtkWidget *mainToolbar = gtk_toolbar_new();
@@ -46,12 +52,12 @@ GtkWidget* createToolbar(GtkWidget *mainWindow, GtkCssProvider *mainCssProvider,
   GtkToolItem *mainToolbarSeparatorObjRight = gtk_separator_tool_item_new();
 
   // Creating all of the basic buttons that will be used in the main toolbar
-  GtkToolItem *prevUsedDirToolItem = createToolbarButton(mainCssProvider, "prevUsedDirButton", "\\icons\\MainToolbar\\LeftArrow.png", toolbarHeight);
-  GtkToolItem *nextUsedDirToolItem = createToolbarButton(mainCssProvider, "nextUsedDirToolItem", "\\icons\\MainToolbar\\RightArrow.png", toolbarHeight);
-  GtkToolItem *parentDirToolItem = createToolbarButton(mainCssProvider, "parentDirToolItem", "\\icons\\MainToolbar\\UpArrow.png", toolbarHeight);
-  GtkToolItem *refreshCurrentDirToolItem = createToolbarButton(mainCssProvider, "refreshCurrentDirToolIcon", "\\icons\\MainToolbar\\Refresh.png", toolbarHeight);
-  GtkToolItem *ftpToolItem = createToolbarButton(mainCssProvider, "ftpToolItem", "\\icons\\MainToolbar\\FTP.png", toolbarHeight);
-  GtkToolItem *settingsToolItem = createToolbarButton(mainCssProvider, "settingsToolItem", "\\icons\\MainToolbar\\Settings.png", toolbarHeight);
+  GtkToolItem *prevUsedDirToolItem = createToolbarButton(&uniHeapMem, "prevUsedDirButton", "\\icons\\MainToolbar\\LeftArrow.png", toolbarHeight);
+  GtkToolItem *nextUsedDirToolItem = createToolbarButton(&uniHeapMem, "nextUsedDirToolItem", "\\icons\\MainToolbar\\RightArrow.png", toolbarHeight);
+  GtkToolItem *parentDirToolItem = createToolbarButton(&uniHeapMem, "parentDirToolItem", "\\icons\\MainToolbar\\UpArrow.png", toolbarHeight);
+  GtkToolItem *refreshCurrentDirToolItem = createToolbarButton(&uniHeapMem, "refreshCurrentDirToolIcon", "\\icons\\MainToolbar\\Refresh.png", toolbarHeight);
+  GtkToolItem *ftpToolItem = createToolbarButton(&uniHeapMem, "ftpToolItem", "\\icons\\MainToolbar\\FTP.png", toolbarHeight);
+  GtkToolItem *settingsToolItem = createToolbarButton(&uniHeapMem, "settingsToolItem", "\\icons\\MainToolbar\\Settings.png", toolbarHeight);
 
   // Creating the entry boxes that will be used for the address bar & file searching
   GtkWidget *addressBar = gtk_entry_new();
@@ -60,12 +66,12 @@ GtkWidget* createToolbar(GtkWidget *mainWindow, GtkCssProvider *mainCssProvider,
 
   g_signal_connect(addressBar, "key-press-event", G_CALLBACK(checkForAddrBarEnter), NULL);
 
-  colourWidgetFromStyles(mainCssProvider, addressBar, "addressBar"); // Used to change the font and size of text in the entry box
+  colourWidgetFromStyles(&uniHeapMem, addressBar, "addressBar"); // Used to change the font and size of text in the entry box
 
   GtkWidget *searchBar = gtk_entry_new();
   GtkToolItem *searchBarToolItem = gtk_tool_item_new();
   gtk_container_add(GTK_CONTAINER(searchBarToolItem), searchBar);
-  colourWidgetFromStyles(mainCssProvider, searchBar, "searchBar");
+  colourWidgetFromStyles(&uniHeapMem, searchBar, "searchBar");
 
   // Adding the buttons and widgets to the toolbar & changing their properties
   gtk_toolbar_insert(GTK_TOOLBAR(mainToolbar), GTK_TOOL_ITEM(prevUsedDirToolItem), -1);

@@ -16,15 +16,14 @@
   debug_printEntireLL(ptr_headLL);
 */
 
-void insertAtEndLL(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, WINDOWSFILEDATA *data);
-void insertAtStartLL(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, WINDOWSFILEDATA *data);
+void insertAtEndLL(PROGRAMHEAPMEM **ptr_uniHeapMem, WINDOWSFILEDATA *fileData);
+void insertAtStartLL(PROGRAMHEAPMEM **ptr_uniHeapMem, WINDOWSFILEDATA *fileData);
 uint8_t whichStringIsFirstLexically(char *str1, char *str2);
-void insertInAlphabeticalFilenameLL(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, WINDOWSFILEDATA *fileData);
-void removeLastNodeLL(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL);
-void removeFirstNodeLL(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL);
-void reverseEntireLL(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL);
-void freeAllFileMemoryLL(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL);
-void checkAndClearLL(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL);
+void insertInAlphabeticalFilenameLL(PROGRAMHEAPMEM **ptr_uniHeapMem, WINDOWSFILEDATA *fileData);
+void removeLastNodeLL(PROGRAMHEAPMEM **ptr_uniHeapMem);
+void reverseEntireLL(PROGRAMHEAPMEM **ptr_uniHeapMem);
+void freeAllFileMemoryLL(PROGRAMHEAPMEM **ptr_uniHeapMem);
+void checkAndClearLL(PROGRAMHEAPMEM **ptr_uniHeapMem);
 void debug_printEntireLLFileName(LLNode *ptr_headLL);
 
 #endif

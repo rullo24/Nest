@@ -33,44 +33,47 @@ GtkWidget* createSizedHorzPane() {
   return gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
 }
 
-void layoutBaseApp(GtkWidget* mainWindow, LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, char **ptr_nestStartingDir) {
+// void layoutBaseApp(GtkWidget* mainWindow, LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, char **ptr_nestStartingDir) {
+void layoutBaseApp(PROGRAMHEAPMEM **ptr_uniHeapMem) {
+  // Creating an alias from the double pointer pass
+  PROGRAMHEAPMEM *uniHeapMem = *ptr_uniHeapMem; 
+
   // Generaating the window's css style provider object
-  GtkCssProvider *mainCssProvider = loadCssProviderAndStyles();  // Gathering the Working Area for use in widget scaling
-  colourWidgetFromStyles(mainCssProvider, mainWindow, "mainWindow");
-  getCurrDirFilesAddToLL(*ptr_nestStartingDir, ptrptr_headLL, ptrptr_tailLL); // Adding the initial files to the explorer
+  colourWidgetFromStyles(&uniHeapMem, uniHeapMem->mainWindow, "mainWindow");
+  getCurrDirFilesAddToLL(&uniHeapMem); // Adding the initial files to the explorer
 
   // Holding the current window's sizing
   int workingAreaHeight = getWindowWorkAreaHeight();
   struct WINDOWSIZESTRUCT windowSize; 
-  initWINDOWSIZESTRUCT(mainWindow, &windowSize);
+  initWINDOWSIZESTRUCT(uniHeapMem->mainWindow, &windowSize);
 
   // Create a boxs to hold the toolbar & the other widgets
   GtkWidget *vertBoxLargeMain = createSizedVertBox(0); // Creating a vertical box to house all of the smaller components
   GtkWidget *vertBoxRightMain = createSizedVertBox(0); // Creating a vertical box to hold the directories, file selector & tipsbar
-  colourWidgetFromStyles(mainCssProvider, vertBoxRightMain, "backgroundBorder");
+  colourWidgetFromStyles(&uniHeapMem, vertBoxRightMain, "backgroundBorder");
   GtkWidget *vertBoxLeftMain = createSizedVertBox(0); // Creating a vertical box to hold file tree and favourites buttons
   GtkWidget *horzPaneLargeMid = createSizedHorzPane(); // Creating a draggable pane between the tree and directory lister
-  gtk_container_add(GTK_CONTAINER(mainWindow), vertBoxLargeMain); 
+  gtk_container_add(GTK_CONTAINER(uniHeapMem->mainWindow), vertBoxLargeMain); 
 
   // Creating all widgets and defining their properties
   int toolbarHeight = workingAreaHeight/25; // 1:25
-  GtkWidget *mainToolbar = createToolbar(mainWindow, mainCssProvider, toolbarHeight, ptr_nestStartingDir);
-  colourWidgetFromStyles(mainCssProvider, mainToolbar, "mainToolbar");
+  GtkWidget *mainToolbar = createToolbar(&uniHeapMem, toolbarHeight);
+  colourWidgetFromStyles(&uniHeapMem, mainToolbar, "mainToolbar");
 
   int tipsbarHeight = workingAreaHeight/60; // 1:60
-  GtkWidget *mainTipsbar = createTipsbar(mainWindow, tipsbarHeight);
-  colourWidgetFromStyles(mainCssProvider, mainTipsbar, "mainTipsbar");
+  GtkWidget *mainTipsbar = createTipsbar(tipsbarHeight);
+  colourWidgetFromStyles(&uniHeapMem, mainTipsbar, "mainTipsbar");
 
   int filebarHeight = workingAreaHeight/40; // 1:40
-  GtkWidget *filebar = createFilebar(mainWindow, mainCssProvider, filebarHeight);
-  colourWidgetFromStyles(mainCssProvider, filebar, "filebar");
+  GtkWidget *filebar = createFilebar(&uniHeapMem, filebarHeight);
+  colourWidgetFromStyles(&uniHeapMem, filebar, "filebar");
   
   GtkWidget *scrolledWindow = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledWindow), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   GtkWidget *fileListBox = gtk_list_box_new();
   gtk_container_add(GTK_CONTAINER(scrolledWindow), fileListBox);
-  addFileButtonsToScreen(ptrptr_headLL, ptrptr_tailLL, fileListBox, mainCssProvider, ptr_nestStartingDir); // Moving files to the listbox
-  colourWidgetFromStyles(mainCssProvider, fileListBox, "fileListBox");
+  addFileButtonsToScreen(&uniHeapMem, fileListBox); // Moving files to the listbox
+  colourWidgetFromStyles(&uniHeapMem, fileListBox, "fileListBox");
 
   // Adding widgets to the right vertical box
   gtk_box_pack_start(GTK_BOX(vertBoxRightMain), filebar, FALSE, FALSE, 0);

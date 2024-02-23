@@ -1,6 +1,8 @@
 #ifndef FILEBAR_H
 #define FILEBAR_H
 
-GtkWidget *createFilebar(GtkWidget *mainWindow, GtkCssProvider *mainCssProvider, int fileBarHeight);
+#include "cStructs.h"
+
+GtkWidget *createFilebar(PROGRAMHEAPMEM **ptr_uniHeapMem, int fileBarHeight);
 
 #endif

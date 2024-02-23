@@ -83,6 +83,7 @@ void removeAllGTKListBoxRows(GtkWidget *fileListBox) {
     g_list_free(listBoxChildren);
 }
 
+// void _initialiseFiledataInWindowsPtr(char *directoryString, WINDOWSFILEDATA **ptrptr_filedata, WIN32_FIND_DATA *ptr_volatileFindFileData) {
 void _initialiseFiledataInWindowsPtr(char *directoryString, WINDOWSFILEDATA **ptrptr_filedata, WIN32_FIND_DATA *ptr_volatileFindFileData) {
     /////////////////////////////////
     // === ADDING INITIAL NODE === //
@@ -108,13 +109,17 @@ void _initialiseFiledataInWindowsPtr(char *directoryString, WINDOWSFILEDATA **pt
 }
 
 // NOTE: Make sure to use \\ for strings when using a forwards slash
-void getCurrDirFilesAddToLL(char *directoryString, LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL) {
+// void getCurrDirFilesAddToLL(char *directoryString, LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL) {
+void getCurrDirFilesAddToLL(PROGRAMHEAPMEM **ptr_uniHeapMem) {
+    // Creating an alias for the double pointer
+    PROGRAMHEAPMEM *uniHeapMem = *ptr_uniHeapMem;
+
     // Clearing any LL nodes if the LL is currently occupied --> Returns only curr dir files in the new LL
-    checkAndClearLL(ptrptr_headLL, ptrptr_tailLL);
+    checkAndClearLL(&uniHeapMem); // LL head and tail pointer should be set to 0x0000000 after this is run
 
     // Adding the wildcard to the directory string to search for all files in the directory
     char wildcardDirString[MAX_PATH];
-    int resultWildcardConcatSize = snprintf(wildcardDirString, sizeof(wildcardDirString), "%s\\*", directoryString); // Copying the wildcard char to the dir
+    int resultWildcardConcatSize = snprintf(wildcardDirString, sizeof(wildcardDirString), "%s\\*", uniHeapMem->nestAppDirectory); // Copying the wildcard char to the dir
 
     if (resultWildcardConcatSize >= sizeof(wildcardDirString)) {
         logMessage("ERROR: Cannot concat a wildcard (*) to the given directory as the total path is > MAX_PATH (260 chars)");
@@ -139,10 +144,10 @@ void getCurrDirFilesAddToLL(char *directoryString, LLNode **ptrptr_headLL, LLNod
     }
 
     // Creating a WINDOWSFILEDATA struct for the initial ptr
-    _initialiseFiledataInWindowsPtr(directoryString, &ptr_initialFileData, &volatileFindFileData);
+    _initialiseFiledataInWindowsPtr(uniHeapMem->nestAppDirectory, &ptr_initialFileData, &volatileFindFileData);
 
     // Adding the fileData to the linkedlist
-    insertInAlphabeticalFilenameLL(ptrptr_headLL, ptrptr_tailLL, ptr_initialFileData); // ptrptr_xx can be parsed straight because it has already been dereferenced in parent func
+    insertInAlphabeticalFilenameLL(&uniHeapMem, ptr_initialFileData); // ptrptr_xx can be parsed straight because it has already been dereferenced in parent func
     // === END OF ADDING NODE === //
     ////////////////////////////////
 
@@ -157,10 +162,10 @@ void getCurrDirFilesAddToLL(char *directoryString, LLNode **ptrptr_headLL, LLNod
             return;
         }
         // Creating a WINDOWSFILEDATA struct for the other file ptrs
-        _initialiseFiledataInWindowsPtr(directoryString, &ptr_moreWindowFileData, &volatileFindFileData);
+        _initialiseFiledataInWindowsPtr(uniHeapMem->nestAppDirectory, &ptr_moreWindowFileData, &volatileFindFileData);
 
         // Adding node to the linkedlist
-        insertInAlphabeticalFilenameLL(ptrptr_headLL, ptrptr_tailLL, ptr_moreWindowFileData);
+        insertInAlphabeticalFilenameLL(&uniHeapMem, ptr_moreWindowFileData);
 
     } while (FindNextFile(fileSearchHandle, &volatileFindFileData) != 0);
     // === END OF ADDING ALL OTHER NODES === //
@@ -171,16 +176,20 @@ void getCurrDirFilesAddToLL(char *directoryString, LLNode **ptrptr_headLL, LLNod
 }
 
 // Adding all of the LL files to the listbox
-void addFileButtonsToScreen(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, GtkWidget *fileListBox, GtkCssProvider *mainCssProvider, char **ptr_nestAppDirectory) {
+// void addFileButtonsToScreen(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, GtkWidget *fileListBox, GtkCssProvider *mainCssProvider, char **ptr_nestAppDirectory) {
+void addFileButtonsToScreen(PROGRAMHEAPMEM **ptr_uniHeapMem, GtkWidget *fileListBox) {
+    // Creating an alias for the double pointer
+    PROGRAMHEAPMEM *uniHeapMem = *ptr_uniHeapMem;
+
     // Removing all previous file buttons
     removeAllGTKListBoxRows(fileListBox);
 
-    if (*ptrptr_headLL == NULL) {
+    if (uniHeapMem->ptr_headLL == NULL) {
         // logMessage("ERROR: Tried to add an empty LL to the screen [filechoose.c]"); --> Don't need this as an error message (e.g empty folders)
         return;
     }
 
-    LLNode *currentNode = *ptrptr_headLL;
+    LLNode *currentNode = uniHeapMem->ptr_headLL;
     while (currentNode != NULL) {
         GtkWidget *listButton = gtk_button_new_with_label(currentNode->fileData->cFileName);
         g_object_set_data(G_OBJECT(listButton), "WINDOWSFILEDATA", currentNode->fileData); // Setting the button data
@@ -192,17 +201,14 @@ void addFileButtonsToScreen(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, GtkW
         }
 
         // Storing data to pass to the callback function
-        nestNecessaryChangeDirData->ptr_nestAppDirectory = ptr_nestAppDirectory;
-        nestNecessaryChangeDirData->ptrptr_headLL = ptrptr_headLL;
-        nestNecessaryChangeDirData->ptrptr_tailLL = ptrptr_tailLL;
+        nestNecessaryChangeDirData->uniHeapMem = uniHeapMem;
         nestNecessaryChangeDirData->fileListBox = fileListBox;
-        nestNecessaryChangeDirData->mainCssProvider = mainCssProvider;
   
         g_signal_connect(listButton, "button-press-event", G_CALLBACK(callbackHandleDoubleClickedFileOrFolder), nestNecessaryChangeDirData); // Attaching callback to double-click action
-        colourWidgetFromStyles(mainCssProvider, listButton, "fileButtons");
+        colourWidgetFromStyles(&uniHeapMem, listButton, "fileButtons");
         
         GtkWidget *listBoxRow = gtk_list_box_row_new();
-        colourWidgetFromStyles(mainCssProvider, listBoxRow, "fileRow");
+        colourWidgetFromStyles(&uniHeapMem, listBoxRow, "fileRow");
         GtkWidget *rowGrid = gtk_grid_new();
         
         gtk_grid_attach(GTK_GRID(rowGrid), listButton, 0, 2, 1, 1);
@@ -215,12 +221,16 @@ void addFileButtonsToScreen(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, GtkW
 }
 
 // Reposting the LL buttons onto the right side of the screen -> return 1 = SUCCESS
-uint8_t refreshNewFileDisplayFromLL(char **ptr_newDirectory, LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, GtkWidget *fileListBox, GtkCssProvider *mainCssProvider) {
+// uint8_t refreshNewFileDisplayFromLL(char **ptr_newDirectory, LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, GtkWidget *fileListBox, GtkCssProvider *mainCssProvider) {
+uint8_t refreshNewFileDisplayFromLL(PROGRAMHEAPMEM **ptr_uniHeapMem, GtkWidget *fileListBox) {
+    // Creating an alias for the double pointer
+    PROGRAMHEAPMEM *uniHeapMem = *ptr_uniHeapMem;
+
     // Add files from the new directory to the (now empty) LL | also, removing all data in the current file LL (calls clearAndCheckLL internally)
-    getCurrDirFilesAddToLL(*ptr_newDirectory, ptrptr_headLL, ptrptr_tailLL);
+    getCurrDirFilesAddToLL(&uniHeapMem);
 
     // Remove all old buttons and create new ones from the new LL data
-    addFileButtonsToScreen(ptrptr_headLL, ptrptr_tailLL, fileListBox, mainCssProvider, ptr_newDirectory); // Screen refresh done within this function
+    addFileButtonsToScreen(&uniHeapMem, fileListBox); // Screen refresh done within this function
 
     return 1;
 }

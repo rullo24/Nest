@@ -4,7 +4,11 @@
 #include "misc.h"
 #include "toolbar.h"
 
-GtkWidget *createFilebar(GtkWidget *mainWindow, GtkCssProvider *mainCssProvider, int fileBarHeight) {
+// GtkWidget *createFilebar(GtkWidget *mainWindow, GtkCssProvider *mainCssProvider, int fileBarHeight) {
+GtkWidget *createFilebar(PROGRAMHEAPMEM **ptr_uniHeapMem, int fileBarHeight) {
+    // Creating an alias for the double pointer
+    PROGRAMHEAPMEM *uniHeapMem = *ptr_uniHeapMem;
+
     // Creating the filebar
     GtkWidget *filebar = gtk_toolbar_new();
     gtk_container_set_border_width(GTK_CONTAINER(filebar), 5);
@@ -12,16 +16,16 @@ GtkWidget *createFilebar(GtkWidget *mainWindow, GtkCssProvider *mainCssProvider,
     // Adding all filebar items
     GtkToolItem *filebarSpacer1 = gtk_separator_tool_item_new();
 
-    GtkToolItem *newFileFolderButton = createToolbarButton(mainCssProvider, "newFileFolderButton", "\\icons\\FileViewTaskbar\\CirclePlus.png", fileBarHeight);
-    GtkToolItem *cutButton = createToolbarButton(mainCssProvider, "cutButton", "\\icons\\FileViewTaskbar\\CutFile.png", fileBarHeight);
-    GtkToolItem *copyButton = createToolbarButton(mainCssProvider, "copyButton", "\\icons\\FileViewTaskbar\\CopyFile.png", fileBarHeight);
-    GtkToolItem *pasteButton = createToolbarButton(mainCssProvider, "pasteButton", "\\icons\\FileViewTaskbar\\PasteFile.png", fileBarHeight);
-    GtkToolItem *renameButton = createToolbarButton(mainCssProvider, "renameButton", "\\icons\\FileViewTaskbar\\RenameFile.png", fileBarHeight);
-    GtkToolItem *shareButton = createToolbarButton(mainCssProvider, "shareButton", "\\icons\\FileViewTaskbar\\ShareFile.png", fileBarHeight);
+    GtkToolItem *newFileFolderButton = createToolbarButton(&uniHeapMem, "newFileFolderButton", "\\icons\\FileViewTaskbar\\CirclePlus.png", fileBarHeight);
+    GtkToolItem *cutButton = createToolbarButton(&uniHeapMem, "cutButton", "\\icons\\FileViewTaskbar\\CutFile.png", fileBarHeight);
+    GtkToolItem *copyButton = createToolbarButton(&uniHeapMem, "copyButton", "\\icons\\FileViewTaskbar\\CopyFile.png", fileBarHeight);
+    GtkToolItem *pasteButton = createToolbarButton(&uniHeapMem, "pasteButton", "\\icons\\FileViewTaskbar\\PasteFile.png", fileBarHeight);
+    GtkToolItem *renameButton = createToolbarButton(&uniHeapMem, "renameButton", "\\icons\\FileViewTaskbar\\RenameFile.png", fileBarHeight);
+    GtkToolItem *shareButton = createToolbarButton(&uniHeapMem, "shareButton", "\\icons\\FileViewTaskbar\\ShareFile.png", fileBarHeight);
 
-    GtkToolItem *hideFolderButton = createToolbarButton(mainCssProvider, "hideFolderButton", "\\icons\\FileViewTaskbar\\File.png", fileBarHeight);
-    GtkToolItem *moreOptionsButton = createToolbarButton(mainCssProvider, "moreOptionsButton", "\\icons\\FileViewTaskbar\\Menu.png", fileBarHeight);
-    GtkToolItem *detailsButton = createToolbarButton(mainCssProvider, "detailsButton", "\\icons\\FileViewTaskbar\\Menu.png", fileBarHeight);
+    GtkToolItem *hideFolderButton = createToolbarButton(&uniHeapMem, "hideFolderButton", "\\icons\\FileViewTaskbar\\File.png", fileBarHeight);
+    GtkToolItem *moreOptionsButton = createToolbarButton(&uniHeapMem, "moreOptionsButton", "\\icons\\FileViewTaskbar\\Menu.png", fileBarHeight);
+    GtkToolItem *detailsButton = createToolbarButton(&uniHeapMem, "detailsButton", "\\icons\\FileViewTaskbar\\Menu.png", fileBarHeight);
 
     // Adding the buttons & widgets to the filebar & changing their properties
     gtk_toolbar_insert(GTK_TOOLBAR(filebar), GTK_TOOL_ITEM(newFileFolderButton), -1);

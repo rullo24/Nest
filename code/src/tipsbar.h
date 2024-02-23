@@ -1,6 +1,8 @@
 #ifndef TIPSBAR_H
 #define TIPSBAR_H
 
-GtkWidget* createTipsbar(GtkWidget *mainWindow, int tipsbarHeight);
+#include "cStructs.h"
+
+GtkWidget* createTipsbar(int tipsbarHeight);
 
 #endif // !TIPSBAR_H

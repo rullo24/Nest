@@ -109,8 +109,10 @@ gboolean callbackHandleDoubleClickedFileOrFolder(GtkWidget *listButton, GdkEvent
 
         // ADD THIS TO BUTTON DATA SO THAT IT CAN BE FREED WITH THE DATA??? ADD TO STRUCT???
         PTRS_NESTDIRCHANGEDATA *nestNecessaryChangeDirData = (PTRS_NESTDIRCHANGEDATA*)parsedData;
-        strcpy(*(nestNecessaryChangeDirData->ptr_nestAppDirectory), (tempFileDataPointer->fullPathName)); // Copying the full path string to the nest app directory var located in main.c
-        uint8_t refreshResult = refreshNewFileDisplayFromLL(nestNecessaryChangeDirData->ptr_nestAppDirectory, nestNecessaryChangeDirData->ptrptr_headLL, nestNecessaryChangeDirData->ptrptr_tailLL, nestNecessaryChangeDirData->fileListBox, nestNecessaryChangeDirData->mainCssProvider);
+
+        // Creating an alias for the double pointer
+        strcpy(nestNecessaryChangeDirData->uniHeapMem->nestAppDirectory, tempFileDataPointer->fullPathName); // Copying the full path string to the nest app directory var located in main.c
+        uint8_t refreshResult = refreshNewFileDisplayFromLL(&(nestNecessaryChangeDirData->uniHeapMem), nestNecessaryChangeDirData->fileListBox);
         if (refreshResult != 1) {
           logMessage("Failed to refresh file display from LL [keyboard.c]");
           return FALSE;

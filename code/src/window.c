@@ -4,7 +4,7 @@
 #include "toolbar.h"
 #include "widgets.h"
 #include "keyboard.h"
-
+#include "cStructs.h"
 
 GtkWidget* generateWindow() {
   // Initialize GTK
@@ -72,9 +72,12 @@ int getWindowWorkAreaHeight() {
   return screenResWorkingAreaHeight;
 }
 
-void startWindowLoop(GtkWidget* mainWindow) {
+void startWindowLoop(PROGRAMHEAPMEM **ptr_uniHeapMem) {
+  // Creating a uniHeapMem alias from the passed pointer
+  PROGRAMHEAPMEM *uniHeapMem = *ptr_uniHeapMem;
+
   // Displaying the window (using the GTK loop)
-  gtk_widget_show_all(mainWindow);
+  gtk_widget_show_all(uniHeapMem->mainWindow);
 
   // Start the GTK main loop
   gtk_main();
