@@ -6,7 +6,10 @@
 #include "keyboard.h"
 #include "cStructs.h"
 
-GtkWidget* generateWindow() {
+GtkWidget* generateWindow(PROGRAMHEAPMEM **ptr_uniHeapMem) {
+  // Creating an alias for the double pointer
+  PROGRAMHEAPMEM *uniHeapMem = *ptr_uniHeapMem; 
+
   // Initialize GTK
   gtk_init(NULL, NULL);
 
@@ -29,7 +32,7 @@ GtkWidget* generateWindow() {
   g_signal_connect(mainWindow, "destroy", G_CALLBACK(on_window_destroy), NULL);
 
   // Connect the "key-press-event" signal to the user made key-checker
-  g_signal_connect(G_OBJECT(mainWindow), "key-press-event", G_CALLBACK(checkForEscKeyEnter), NULL);
+  g_signal_connect(G_OBJECT(mainWindow), "key-press-event", G_CALLBACK(checkForEscKeyEnter), uniHeapMem);
 
   return mainWindow;
 }

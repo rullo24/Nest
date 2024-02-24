@@ -70,10 +70,10 @@ void layoutBaseApp(PROGRAMHEAPMEM **ptr_uniHeapMem) {
   
   GtkWidget *scrolledWindow = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledWindow), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  GtkWidget *fileListBox = gtk_list_box_new();
-  gtk_container_add(GTK_CONTAINER(scrolledWindow), fileListBox);
-  addFileButtonsToScreen(&uniHeapMem, fileListBox); // Moving files to the listbox
-  colourWidgetFromStyles(&uniHeapMem, fileListBox, "fileListBox");
+  // Allocating memory for the fileListBox (so that it is not freed after the scope of this function finishes) --> Need to free at the end of the program run
+  gtk_container_add(GTK_CONTAINER(scrolledWindow), uniHeapMem->fileListBox);
+  addFileButtonsToScreen(&uniHeapMem); // Moving files to the listbox
+  colourWidgetFromStyles(&uniHeapMem, uniHeapMem->fileListBox, "fileListBox");
 
   // Adding widgets to the right vertical box
   gtk_box_pack_start(GTK_BOX(vertBoxRightMain), filebar, FALSE, FALSE, 0);
@@ -81,9 +81,6 @@ void layoutBaseApp(PROGRAMHEAPMEM **ptr_uniHeapMem) {
   gtk_box_pack_start(GTK_BOX(vertBoxRightMain), mainTipsbar, FALSE, FALSE, 0); 
 
   // NEED TO ADD WIDGETS TO THE LEFT BOX
-
-
-
 
 
 

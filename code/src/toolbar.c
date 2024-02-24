@@ -4,8 +4,10 @@
 #include "log.h"
 #include "colours.h"
 #include "keyboard.h"
+#include "filechoose.h"
 
-GtkToolItem* createToolbarButton(PROGRAMHEAPMEM **ptr_uniHeapMem, char *buttonNameAsString, char *pathFromExecDir, int toolbarHeight) {
+// Creating a button for use in a GTK toolbar
+GtkWidget* createButtonForToolbar(PROGRAMHEAPMEM **ptr_uniHeapMem, char *buttonNameAsString, char *pathFromExecDir, int toolbarHeight) {
   // Creating an alias for the double pointer
   PROGRAMHEAPMEM *uniHeapMem = *ptr_uniHeapMem;
 
@@ -29,14 +31,48 @@ GtkToolItem* createToolbarButton(PROGRAMHEAPMEM **ptr_uniHeapMem, char *buttonNa
     // Create a GtkToolItem and set its properties
     GtkWidget *mainToolbarStdButton = gtk_button_new();
     colourWidgetFromStyles(&uniHeapMem, mainToolbarStdButton, buttonNameAsString);
-    GtkToolItem *mainToolbarButtonToolItem = gtk_tool_item_new();
 
     gtk_button_set_image(GTK_BUTTON(mainToolbarStdButton), pngImage);
     gtk_image_set_pixel_size(GTK_IMAGE(pngImage), 24);
-    gtk_container_add(GTK_CONTAINER(mainToolbarButtonToolItem), mainToolbarStdButton);
+
+    return mainToolbarStdButton;
+  }
+}
+
+// Creating a toolbar-compatible item from the GTK kit
+GtkToolItem *createToolbarToolItemFromButton(GtkWidget *toolbarButton) {
+    GtkToolItem *mainToolbarButtonToolItem = gtk_tool_item_new();
+    gtk_container_add(GTK_CONTAINER(mainToolbarButtonToolItem), toolbarButton);
 
     return mainToolbarButtonToolItem;   
+}
+
+// Creating a prevUsedDirButtonCallback
+gboolean _parentDirButtonClickCallback(GtkWidget *parentDirButton, gpointer parsedData) {
+  PROGRAMHEAPMEM *uniHeapMem = (PROGRAMHEAPMEM*)parsedData;
+  char *currentDirBuffer = (char*)malloc(MAX_PATH * sizeof(char));
+  strcpy(currentDirBuffer, uniHeapMem->nestAppDirectory); // Copying to the current dir to the buffer (avoiding issues caused by an error)
+  uint8_t grabParentResult = grabParentDirFromDirectory(&currentDirBuffer);
+
+  if (grabParentResult == 0) {
+    return TRUE; // 0 returned if you cannot move any higher up the tree
   }
+  else if (grabParentResult == 1) {
+    // Success func run
+    strcpy(uniHeapMem->nestAppDirectory, currentDirBuffer); // Copying the string to the nestAppDir file-wide var
+    uint8_t refreshResult = refreshNewFileDisplayFromLL(&uniHeapMem);
+    if (refreshResult != 1) {
+      logMessage("ERROR: Failed to refresh file display from back button press [toolbar.c]");
+      return FALSE;
+    }
+  }
+  else {
+    logMessage("ERROR: An error occurred in the grabParentDirFromDirectory() func [toolbar.c]");
+    return FALSE;
+  }
+
+  free(currentDirBuffer); // Refreshing the buffer once the func has run
+  return TRUE;
 }
 
 // GtkWidget* createToolbar(GtkWidget *mainWindow, GtkCssProvider *mainCssProvider, int toolbarHeight, char **ptr_nestAppDirectory) {
@@ -52,20 +88,25 @@ GtkWidget* createToolbar(PROGRAMHEAPMEM **ptr_uniHeapMem, int toolbarHeight) {
   GtkToolItem *mainToolbarSeparatorObjRight = gtk_separator_tool_item_new();
 
   // Creating all of the basic buttons that will be used in the main toolbar
-  GtkToolItem *prevUsedDirToolItem = createToolbarButton(&uniHeapMem, "prevUsedDirButton", "\\icons\\MainToolbar\\LeftArrow.png", toolbarHeight);
-  GtkToolItem *nextUsedDirToolItem = createToolbarButton(&uniHeapMem, "nextUsedDirToolItem", "\\icons\\MainToolbar\\RightArrow.png", toolbarHeight);
-  GtkToolItem *parentDirToolItem = createToolbarButton(&uniHeapMem, "parentDirToolItem", "\\icons\\MainToolbar\\UpArrow.png", toolbarHeight);
-  GtkToolItem *refreshCurrentDirToolItem = createToolbarButton(&uniHeapMem, "refreshCurrentDirToolIcon", "\\icons\\MainToolbar\\Refresh.png", toolbarHeight);
-  GtkToolItem *ftpToolItem = createToolbarButton(&uniHeapMem, "ftpToolItem", "\\icons\\MainToolbar\\FTP.png", toolbarHeight);
-  GtkToolItem *settingsToolItem = createToolbarButton(&uniHeapMem, "settingsToolItem", "\\icons\\MainToolbar\\Settings.png", toolbarHeight);
+  GtkWidget *prevUsedDirButton = createButtonForToolbar(&uniHeapMem, "prevUsedDirButton", "\\icons\\MainToolbar\\LeftArrow.png", toolbarHeight);
+  GtkToolItem *prevUsedDirToolItem = createToolbarToolItemFromButton(prevUsedDirButton);
+  GtkWidget *nextUsedDirButton = createButtonForToolbar(&uniHeapMem, "nextUsedDirToolItem", "\\icons\\MainToolbar\\RightArrow.png", toolbarHeight);
+  GtkToolItem *nextUsedDirToolItem = createToolbarToolItemFromButton(nextUsedDirButton);
+  GtkWidget *parentDirButton = createButtonForToolbar(&uniHeapMem, "parentDirToolItem", "\\icons\\MainToolbar\\UpArrow.png", toolbarHeight);
+  g_signal_connect(parentDirButton, "clicked", G_CALLBACK(_parentDirButtonClickCallback), uniHeapMem);
+  GtkToolItem *parentDirToolItem = createToolbarToolItemFromButton(parentDirButton);
+  GtkWidget *refreshCurrentDirButton = createButtonForToolbar(&uniHeapMem, "refreshCurrentDirToolIcon", "\\icons\\MainToolbar\\Refresh.png", toolbarHeight);
+  GtkToolItem *refreshCurrentDirToolItem = createToolbarToolItemFromButton(refreshCurrentDirButton);
+  GtkWidget *ftpButton = createButtonForToolbar(&uniHeapMem, "ftpToolItem", "\\icons\\MainToolbar\\FTP.png", toolbarHeight);
+  GtkToolItem *ftpToolItem = createToolbarToolItemFromButton(ftpButton);
+  GtkWidget *settingsButton = createButtonForToolbar(&uniHeapMem, "settingsToolItem", "\\icons\\MainToolbar\\Settings.png", toolbarHeight);
+  GtkToolItem *settingsToolItem = createToolbarToolItemFromButton(settingsButton);
 
   // Creating the entry boxes that will be used for the address bar & file searching
   GtkWidget *addressBar = gtk_entry_new();
   GtkToolItem *addressBarToolItem = gtk_tool_item_new();
   gtk_container_add(GTK_CONTAINER(addressBarToolItem), addressBar);
-
-  g_signal_connect(addressBar, "key-press-event", G_CALLBACK(checkForAddrBarEnter), NULL);
-
+  g_signal_connect(addressBar, "key-press-event", G_CALLBACK(checkForAddrBarEnter), uniHeapMem);
   colourWidgetFromStyles(&uniHeapMem, addressBar, "addressBar"); // Used to change the font and size of text in the entry box
 
   GtkWidget *searchBar = gtk_entry_new();

@@ -56,6 +56,31 @@ void appendFileToExecDirWindowsWDoubleBackslash(char *fileLocation, char pathBuf
 
 }
 
+uint8_t grabParentDirFromDirectory(char **ptr_parsedDirectory) {
+  // Creating an alias for the double pointer
+  char *parsedDirectory = *ptr_parsedDirectory;
+  char *lastSeparator = strrchr(parsedDirectory, '\\'); // Find the last occurrence of '\\'
+
+  // Check if '\\' is found and comes after the last null terminator
+  if (lastSeparator != NULL) {
+    char *lastNull = strrchr(parsedDirectory, '\0'); // Find the last null terminator
+    *lastSeparator = '\0'; // Replace '\\' with the null byte (shrinking the original string)
+
+    if (lastNull != NULL) {
+      *lastNull = 'a'; // Setting the null byte to any random character (as to avoid causing issues if the string is then enlargened later on)
+    }
+    else {
+      logMessage("Could not find the null byte in the parent dir string. String not parsed correctly? [misc.c]");
+      return -1;
+    }
+  }
+  else {
+    return 0; // Did not change the directory as \\ could not be found in the name (presumed top of tree i.e. C:)
+  }
+
+  return 1; // Return success
+}
+
 // Checks if powershell is installed on the user's computer | returns 1 = YES | 0 = NO
 uint8_t isPowershellInstalledOnTargetComp() {
   int result = system("where powershell.exe > nul");

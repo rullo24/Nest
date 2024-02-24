@@ -12,6 +12,7 @@
 #include "cStructs.h"
 #include "keyboard.h"
 #include <glib.h>
+#include "filechoose.h"
 
 // Debugging list box
 void _debug_printNumOfListBoxRows(GtkWidget *fileListBox) {
@@ -109,7 +110,6 @@ void _initialiseFiledataInWindowsPtr(char *directoryString, WINDOWSFILEDATA **pt
 }
 
 // NOTE: Make sure to use \\ for strings when using a forwards slash
-// void getCurrDirFilesAddToLL(char *directoryString, LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL) {
 void getCurrDirFilesAddToLL(PROGRAMHEAPMEM **ptr_uniHeapMem) {
     // Creating an alias for the double pointer
     PROGRAMHEAPMEM *uniHeapMem = *ptr_uniHeapMem;
@@ -176,35 +176,28 @@ void getCurrDirFilesAddToLL(PROGRAMHEAPMEM **ptr_uniHeapMem) {
 }
 
 // Adding all of the LL files to the listbox
-// void addFileButtonsToScreen(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, GtkWidget *fileListBox, GtkCssProvider *mainCssProvider, char **ptr_nestAppDirectory) {
-void addFileButtonsToScreen(PROGRAMHEAPMEM **ptr_uniHeapMem, GtkWidget *fileListBox) {
+uint8_t addFileButtonsToScreen(PROGRAMHEAPMEM **ptr_uniHeapMem) {
     // Creating an alias for the double pointer
     PROGRAMHEAPMEM *uniHeapMem = *ptr_uniHeapMem;
 
+    if (uniHeapMem->fileListBox == NULL) {
+        logMessage("ERROR: NULL value for fileListBox that is trying to be accessed [filechoose.c]");
+        return -1;
+    }
+
     // Removing all previous file buttons
-    removeAllGTKListBoxRows(fileListBox);
+    removeAllGTKListBoxRows(uniHeapMem->fileListBox);
 
     if (uniHeapMem->ptr_headLL == NULL) {
         // logMessage("ERROR: Tried to add an empty LL to the screen [filechoose.c]"); --> Don't need this as an error message (e.g empty folders)
-        return;
+        return 1; // Success for an empty folder location (or a broken head ptr) --> fixed elsewhere if so
     }
 
     LLNode *currentNode = uniHeapMem->ptr_headLL;
     while (currentNode != NULL) {
         GtkWidget *listButton = gtk_button_new_with_label(currentNode->fileData->cFileName);
         g_object_set_data(G_OBJECT(listButton), "WINDOWSFILEDATA", currentNode->fileData); // Setting the button data
-
-        PTRS_NESTDIRCHANGEDATA *nestNecessaryChangeDirData = (PTRS_NESTDIRCHANGEDATA*)malloc(sizeof(PTRS_NESTDIRCHANGEDATA));
-        if (nestNecessaryChangeDirData == NULL) {
-            logMessage("ERROR: Failed to malloc memory for the PTRS_NESTDIRCHANGEDATA struct [filechoose.c]");
-            return;
-        }
-
-        // Storing data to pass to the callback function
-        nestNecessaryChangeDirData->uniHeapMem = uniHeapMem;
-        nestNecessaryChangeDirData->fileListBox = fileListBox;
-  
-        g_signal_connect(listButton, "button-press-event", G_CALLBACK(callbackHandleDoubleClickedFileOrFolder), nestNecessaryChangeDirData); // Attaching callback to double-click action
+        g_signal_connect(listButton, "button-press-event", G_CALLBACK(callbackHandleDoubleClickedFileOrFolder), uniHeapMem); // Attaching callback to double-click action
         colourWidgetFromStyles(&uniHeapMem, listButton, "fileButtons");
         
         GtkWidget *listBoxRow = gtk_list_box_row_new();
@@ -213,16 +206,17 @@ void addFileButtonsToScreen(PROGRAMHEAPMEM **ptr_uniHeapMem, GtkWidget *fileList
         
         gtk_grid_attach(GTK_GRID(rowGrid), listButton, 0, 2, 1, 1);
         gtk_container_add(GTK_CONTAINER(listBoxRow), rowGrid);
-        gtk_list_box_insert(GTK_LIST_BOX(fileListBox), listBoxRow, -1);
+        gtk_list_box_insert(GTK_LIST_BOX(uniHeapMem->fileListBox), listBoxRow, -1);
         gtk_widget_show_all(listBoxRow); // This is require to reshow the widget during runtime --> show_all() recursively shows all children
     
         currentNode = currentNode->nextNode; // Moving to the next node in the LL
     }
+
+    return 1; // Success
 }
 
 // Reposting the LL buttons onto the right side of the screen -> return 1 = SUCCESS
-// uint8_t refreshNewFileDisplayFromLL(char **ptr_newDirectory, LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, GtkWidget *fileListBox, GtkCssProvider *mainCssProvider) {
-uint8_t refreshNewFileDisplayFromLL(PROGRAMHEAPMEM **ptr_uniHeapMem, GtkWidget *fileListBox) {
+uint8_t refreshNewFileDisplayFromLL(PROGRAMHEAPMEM **ptr_uniHeapMem) {
     // Creating an alias for the double pointer
     PROGRAMHEAPMEM *uniHeapMem = *ptr_uniHeapMem;
 
@@ -230,7 +224,7 @@ uint8_t refreshNewFileDisplayFromLL(PROGRAMHEAPMEM **ptr_uniHeapMem, GtkWidget *
     getCurrDirFilesAddToLL(&uniHeapMem);
 
     // Remove all old buttons and create new ones from the new LL data
-    addFileButtonsToScreen(&uniHeapMem, fileListBox); // Screen refresh done within this function
+    addFileButtonsToScreen(&uniHeapMem); // Screen refresh done within this function
 
     return 1;
 }

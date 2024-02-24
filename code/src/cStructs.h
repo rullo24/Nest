@@ -52,11 +52,6 @@ struct IconImageData {
   GtkWidget *extIconImage;
 };
 
-struct PTRS_NESTDIRCHANGEDATA {
-  PROGRAMHEAPMEM  *uniHeapMem;
-  GtkWidget       *fileListBox;
-};
-
 struct PROGRAMHEAPMEM {
   FREEMEMORYNODE  *ptr_memToFreeHead_LL;
   FREEMEMORYNODE  *ptr_memToFreeTail_LL;
@@ -66,6 +61,7 @@ struct PROGRAMHEAPMEM {
   char            *nestAppDirectory;
   GtkWidget       *mainWindow; // Pointer controlled by GTK
   GtkCssProvider  *mainCssProvider; // Pointer controlled by GTK
+  GtkWidget       *fileListBox; // Holds the file buttons and displayed necessary info
 };
 
 struct FREEMEMORYNODE {

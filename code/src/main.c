@@ -23,7 +23,7 @@ void _freeHeapMemPointers(PROGRAMHEAPMEM **ptr_uniHeapMem);
 // ************************* START OF MAIN FUNC ************************* //
 
 
-int main(int argc, char** argv) {
+int main() {
   // Parsing all TOML settings into a usable struct
   // NESTSETTINGS nestSettings = grabNestSettings(); // NEEDS TO BE COMPLETED
 
@@ -75,7 +75,7 @@ uint8_t _initHeapMemPointers(PROGRAMHEAPMEM **ptr_uniHeapMem) {
     return -1;
   }
 
-  uniHeapMem->nestAppDirectory = (char*)malloc(sizeof(char)); // Allocating mem for the Nest app current dir tracker
+  uniHeapMem->nestAppDirectory = (char*)malloc(sizeof(char) * MAX_PATH + 1); // Allocating mem for the Nest app current dir tracker
   if (uniHeapMem->nestAppDirectory == NULL) {
     logMessage("ERROR: Failed to allocate memory for nestAppDirectory [main.c]");
     return -1;
@@ -88,8 +88,9 @@ uint8_t _initHeapMemPointers(PROGRAMHEAPMEM **ptr_uniHeapMem) {
   uniHeapMem->ptr_memToFreeTail_LL = NULL; // LL tail for controlling program free() on exit - memory allocated on node addition
 
   // GTK controlled vars //
-  uniHeapMem->mainWindow = generateWindow(); // GtkWidget* created from gtk_window_new() func (also changes several GTK window settings)
+  uniHeapMem->mainWindow = generateWindow(&uniHeapMem); // GtkWidget* created from gtk_window_new() func (also changes several GTK window settings)
   uniHeapMem->mainCssProvider = loadCssProviderAndStyles(); // GtkCssProvider* created from gtk_css_provider_new() (local file used)
+  uniHeapMem->fileListBox = gtk_list_box_new(); // To be set when the list box is created
 
   return 1; // Return success flag
 }
@@ -116,7 +117,10 @@ void _freeHeapMemPointers(PROGRAMHEAPMEM **ptr_uniHeapMem) {
   // Freeing the directory address string
   free(uniHeapMem->nestAppDirectory);
 
+  freeAllFileMemoryLL(&uniHeapMem);
+
   // Freeing the uniHeapMem memory (should be done last)
   free(uniHeapMem);
+  printf("Successful Frees");
 }
 

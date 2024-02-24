@@ -8,8 +8,8 @@
 
 void removeAllGTKListBoxRows(GtkWidget *fileListBox);
 void getCurrDirFilesAddToLL(PROGRAMHEAPMEM **ptr_uniHeapMem);
-void addFileButtonsToScreen(PROGRAMHEAPMEM **ptr_uniHeapMem, GtkWidget *fileListBox);
-uint8_t refreshNewFileDisplayFromLL(PROGRAMHEAPMEM **ptr_uniHeapMem, GtkWidget *fileListBox);
+uint8_t addFileButtonsToScreen(PROGRAMHEAPMEM **ptr_uniHeapMem);
+uint8_t refreshNewFileDisplayFromLL(PROGRAMHEAPMEM **ptr_uniHeapMem);
 WINDOWSFILEDATA *getFileDataFromButton(GtkWidget *parsedButton);
 
 #endif
