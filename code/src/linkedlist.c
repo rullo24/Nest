@@ -5,63 +5,9 @@
 #include "linkedlist.h"
 #include <gtk/gtk.h> // Used exclusively for debugging (printing LL to console)
 
-// Function to create a new node
-LLNode *createLLNode(WINDOWSFILEDATA *fileData) {
-    // LLNode *ptr_newNode = (LLNode*)malloc(sizeof(LLNode));
-    LLNode *ptr_newNode = (LLNode*)malloc(sizeof(LLNode));
-
-    if (ptr_newNode == NULL) {
-        logMessage("ERROR: Failed to Malloc for the LL");
-    }
-
-    ptr_newNode->fileData = fileData;
-    ptr_newNode->nextNode = NULL;
-    ptr_newNode->prevNode = NULL;
-
-    return ptr_newNode;
-}
-
-// Insert a node at the end of the LL -> Require a double pointer otherwise the ptr_headLL & tail will not be changed outside of the function scope
-// void insertAtEndLL(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, WINDOWSFILEDATA *fileData) {
-void insertAtEndLL(PROGRAMHEAPMEM **ptr_uniHeapMem, WINDOWSFILEDATA *fileData) {
-    // Creating an alias for the double pointer
-    PROGRAMHEAPMEM *uniHeapMem = *ptr_uniHeapMem;
-
-    // Using malloc from the parsed nodeSize
-    LLNode *ptr_newNode = createLLNode(fileData);
-
-    if(uniHeapMem->ptr_headLL == NULL) {
-        uniHeapMem->ptr_headLL = ptr_newNode;
-    }
-    else {
-        uniHeapMem->ptr_tailLL->nextNode = ptr_newNode;
-        ptr_newNode->prevNode = uniHeapMem->ptr_tailLL;
-    }
-
-    // Moving the tail further down
-    uniHeapMem->ptr_tailLL = ptr_newNode;
-}
-
-// Insert a node at the beginning of the LL -> Requires a double pointer otherwise the ptr_headLL & tail will not be changed outside of the function scope 
-// void insertAtStartLL(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, WINDOWSFILEDATA *fileData) {
-void insertAtStartLL(PROGRAMHEAPMEM **ptr_uniHeapMem, WINDOWSFILEDATA *fileData) {
-    // Creating an alias for the double pointer
-    PROGRAMHEAPMEM *uniHeapMem = *ptr_uniHeapMem;
-
-    // Using malloc from the parsed nodeSize
-    LLNode *ptr_newNode= createLLNode(fileData);
-
-    if (uniHeapMem->ptr_headLL == NULL) {
-        uniHeapMem->ptr_headLL = ptr_newNode;
-    }
-    else {
-        uniHeapMem->ptr_headLL->prevNode = ptr_newNode;
-        ptr_newNode->nextNode = uniHeapMem->ptr_headLL;
-    }
-
-    // Making room at the LL head for the new node
-    uniHeapMem->ptr_headLL = ptr_newNode;
-}
+////////////////////////////////////////////////////////////////////
+/////////////////////// Windows File Data LL ///////////////////////
+////////////////////////////////////////////////////////////////////
 
 // Function to alphabetically compare two strings 
 uint8_t whichStringIsFirstLexically(char *str1, char *str2) {
@@ -95,9 +41,64 @@ bool checkIfFileOrFolderShownInExplorer(char *filename) {
     return true;
 }
 
+// Function to create a new node
+LLNode *createLLNodeFiles(WINDOWSFILEDATA *fileData) {
+    // LLNode *ptr_newNode = (LLNode*)malloc(sizeof(LLNode));
+    LLNode *ptr_newNode = (LLNode*)malloc(sizeof(LLNode));
+
+    if (ptr_newNode == NULL) {
+        logMessage("ERROR: Failed to Malloc for the LL");
+    }
+
+    ptr_newNode->fileData = fileData;
+    ptr_newNode->nextNode = NULL;
+    ptr_newNode->prevNode = NULL;
+
+    return ptr_newNode;
+}
+
+// Insert a node at the end of the LL -> Require a double pointer otherwise the ptr_headLL & tail will not be changed outside of the function scope
+void insertAtEndLLFiles(PROGRAMHEAPMEM **ptr_uniHeapMem, WINDOWSFILEDATA *fileData) {
+    // Creating an alias for the double pointer
+    PROGRAMHEAPMEM *uniHeapMem = *ptr_uniHeapMem;
+
+    // Using malloc from the parsed nodeSize
+    LLNode *ptr_newNode = createLLNodeFiles(fileData);
+
+    if(uniHeapMem->ptr_headLL == NULL) {
+        uniHeapMem->ptr_headLL = ptr_newNode;
+    }
+    else {
+        uniHeapMem->ptr_tailLL->nextNode = ptr_newNode;
+        ptr_newNode->prevNode = uniHeapMem->ptr_tailLL;
+    }
+
+    // Moving the tail further down
+    uniHeapMem->ptr_tailLL = ptr_newNode;
+}
+
+// Insert a node at the beginning of the LL -> Requires a double pointer otherwise the ptr_headLL & tail will not be changed outside of the function scope 
+void insertAtStartLLFiles(PROGRAMHEAPMEM **ptr_uniHeapMem, WINDOWSFILEDATA *fileData) {
+    // Creating an alias for the double pointer
+    PROGRAMHEAPMEM *uniHeapMem = *ptr_uniHeapMem;
+
+    // Using malloc from the parsed nodeSize
+    LLNode *ptr_newNode= createLLNodeFiles(fileData);
+
+    if (uniHeapMem->ptr_headLL == NULL) {
+        uniHeapMem->ptr_headLL = ptr_newNode;
+    }
+    else {
+        uniHeapMem->ptr_headLL->prevNode = ptr_newNode;
+        ptr_newNode->nextNode = uniHeapMem->ptr_headLL;
+    }
+
+    // Making room at the LL head for the new node
+    uniHeapMem->ptr_headLL = ptr_newNode;
+}
+
 // Inserting a node in a LL in alphabetical order --> Takes filename as alphabetical basis
-// void insertInAlphabeticalFilenameLL(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL, WINDOWSFILEDATA *fileData) {
-void insertInAlphabeticalFilenameLL(PROGRAMHEAPMEM **ptr_uniHeapMem, WINDOWSFILEDATA *fileData) {
+void insertInAlphabeticalFilenameLLFiles(PROGRAMHEAPMEM **ptr_uniHeapMem, WINDOWSFILEDATA *fileData) {
     // Creating an alias for the double pointer
     PROGRAMHEAPMEM *uniHeapMem = *ptr_uniHeapMem;   
 
@@ -108,7 +109,7 @@ void insertInAlphabeticalFilenameLL(PROGRAMHEAPMEM **ptr_uniHeapMem, WINDOWSFILE
     }
 
     // Using malloc from the parsed nodeSize
-    LLNode *ptr_newNode = createLLNode(fileData);
+    LLNode *ptr_newNode = createLLNodeFiles(fileData);
 
     // Making the entire string locally lowercase so that it can be compared via ASCII   
     size_t filenameLen = strlen(fileData->cFileName);
@@ -150,8 +151,7 @@ void insertInAlphabeticalFilenameLL(PROGRAMHEAPMEM **ptr_uniHeapMem, WINDOWSFILE
 }
 
 // Removing the end LL node -> Requires a double pointer otherwise the ptr_headLL & tail will not be changed outside of the function scope 
-// void removeLastNodeLL(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL) {
-void removeLastNodeLL(PROGRAMHEAPMEM **ptr_uniHeapMem) {
+void removeLastNodeLLFiles(PROGRAMHEAPMEM **ptr_uniHeapMem) {
     // Creating an alias for the double pointer
     PROGRAMHEAPMEM *uniHeapMem = *ptr_uniHeapMem;
 
@@ -182,8 +182,7 @@ void removeLastNodeLL(PROGRAMHEAPMEM **ptr_uniHeapMem) {
 }
 
 // Function to reverse a linked list.
-// void reverseEntireLL(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL) {
-void reverseEntireLL(PROGRAMHEAPMEM **ptr_uniHeapMem) {
+void reverseEntireLLFiles(PROGRAMHEAPMEM **ptr_uniHeapMem) {
     // Creating an alias for the double pointer
     PROGRAMHEAPMEM *uniHeapMem = *ptr_uniHeapMem;
 
@@ -203,8 +202,7 @@ void reverseEntireLL(PROGRAMHEAPMEM **ptr_uniHeapMem) {
 }
 
 // Removing all nodes in the LL (freeing the memory while doing so)
-// void freeAllFileMemoryLL(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL) {
-void freeAllFileMemoryLL(PROGRAMHEAPMEM **ptr_uniHeapMem) {
+void freeAllFileMemoryLLFiles(PROGRAMHEAPMEM **ptr_uniHeapMem) {
     // Creating an alias for the double pointer
     PROGRAMHEAPMEM *uniHeapMem = *ptr_uniHeapMem;
 
@@ -216,14 +214,13 @@ void freeAllFileMemoryLL(PROGRAMHEAPMEM **ptr_uniHeapMem) {
     // Iterating through LL to free memory
     LLNode *ptr_currentNode = uniHeapMem->ptr_tailLL; 
     while(ptr_currentNode != NULL) {
-        removeLastNodeLL(&uniHeapMem); // This function free()s all allocated memory (node and windows data) whilst removing the tail node
+        removeLastNodeLLFiles(&uniHeapMem); // This function free()s all allocated memory (node and windows data) whilst removing the tail node
         ptr_currentNode = uniHeapMem->ptr_tailLL;
     }
 }
 
 // Clearing a LL if it is currently in use
-// void checkAndClearLL(LLNode **ptrptr_headLL, LLNode **ptrptr_tailLL) {
-void checkAndClearLL(PROGRAMHEAPMEM **ptr_uniHeapMem) {
+void checkAndClearLLFiles(PROGRAMHEAPMEM **ptr_uniHeapMem) {
     // Creating an alias for the double pointer
     PROGRAMHEAPMEM *uniHeapMem = *ptr_uniHeapMem;
 
@@ -235,7 +232,7 @@ void checkAndClearLL(PROGRAMHEAPMEM **ptr_uniHeapMem) {
     // Clearing the LL only of there is memory in it
     LLNode *ptr_currentNode = uniHeapMem->ptr_tailLL;
     while(ptr_currentNode != NULL) {
-        removeLastNodeLL(&uniHeapMem); // This function free()s all allocated memory (node and windows data) whilst removing the tail node
+        removeLastNodeLLFiles(&uniHeapMem); // This function free()s all allocated memory (node and windows data) whilst removing the tail node
         ptr_currentNode = uniHeapMem->ptr_tailLL;
     }
 
@@ -243,7 +240,7 @@ void checkAndClearLL(PROGRAMHEAPMEM **ptr_uniHeapMem) {
 }
 
 // Printing the name of each file that is in the linkedlist
-void debug_printEntireLLFileName(LLNode *ptr_headLL) {
+void debug_printEntireLLFilesName(LLNode *ptr_headLL) {
     if(ptr_headLL == NULL) {
         g_print("\nThe LL is empty");
         return;
@@ -261,3 +258,8 @@ void debug_printEntireLLFileName(LLNode *ptr_headLL) {
     }
     g_print("\n\n=== END OF LL ===\n");
 }
+
+////////////////////////////////////////////////////////////////////
+/////////////////////// Prev and Next Dir LL ///////////////////////
+////////////////////////////////////////////////////////////////////
+

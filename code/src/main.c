@@ -166,7 +166,7 @@ void _freeHeapMemPointers(PROGRAMHEAPMEM **ptr_uniHeapMem) {
   free(uniHeapMem->defaultLocations);
 
   // Freeing all memory from the file buttons LL
-  freeAllFileMemoryLL(&uniHeapMem);
+  freeAllFileMemoryLLFiles(&uniHeapMem);
 
   // Freeing the uniHeapMem memory (should be done last)
   free(uniHeapMem);

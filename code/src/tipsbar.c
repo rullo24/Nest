@@ -3,7 +3,7 @@
 #include "tipsbar.h"
 #include "cStructs.h"
 
-// GtkWidget* createTipsbar(GtkWidget *mainWindow, int tipsbarHeight) {
+// Creating the bottom toolbar for showing information about a directory
 GtkWidget* createTipsbar(int tipsbarHeight) {
   // Creating the tipsbar (the bottom toolbar)
   GtkWidget *mainTipsbar = gtk_toolbar_new();

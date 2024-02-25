@@ -13,6 +13,7 @@ typedef struct WINDOWSIZESTRUCT WINDOWSIZESTRUCT;
 typedef struct IconImageData IconImageData;
 typedef struct DEFAULTWINDOWSLOCATIONS DEFAULTWINDOWSLOCATIONS;
 typedef struct PROGRAMHEAPMEM PROGRAMHEAPMEM;
+typedef struct prevDirsNode prevDirsNode;
 typedef struct FREEMEMORYNODE FREEMEMORYNODE;
 
 //////////////////////////////////////////////////////
@@ -28,6 +29,7 @@ struct WINDOWSFILEDATA {
     FILETIME    ftLastWriteTime;
     DWORD       nFileSizeHigh;
     DWORD       nFileSizeLow;
+    uint64_t    fileSizeInBytes;
 };
 
 struct NESTSETTINGS {
@@ -37,9 +39,9 @@ struct NESTSETTINGS {
 };
 
 struct LLNode {
-    WINDOWSFILEDATA         *fileData;
-    struct LLNode           *nextNode;
-    struct LLNode           *prevNode;
+    WINDOWSFILEDATA   *fileData;
+    LLNode            *nextNode;
+    LLNode            *prevNode;
 };
 
 struct WINDOWSIZESTRUCT {
@@ -71,6 +73,12 @@ struct DEFAULTWINDOWSLOCATIONS {
   char *musicLoc;
   char *picturesLoc;
   char *videosLoc;
+};
+
+struct prevDirsNode {
+  prevDirsNode *prevDirsNextNode;
+  prevDirsNode *prevDirsPrevNode;
+  char *prevDirsNodeDirectory;
 };
 
 struct FREEMEMORYNODE {

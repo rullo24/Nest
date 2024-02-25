@@ -107,6 +107,10 @@ void _initialiseFiledataInWindowsPtr(char *directoryString, WINDOWSFILEDATA **pt
     char fullPathNameBuffer[MAX_PATH];
     snprintf(fullPathNameBuffer, sizeof(fullPathNameBuffer), "%s\\%s", directoryString, (*ptrptr_filedata)->cFileName);
     strcpy((*ptrptr_filedata)->fullPathName, fullPathNameBuffer); // Need to copy as fullPathNameBuffer memory is removed once the func goes out of scope
+
+    // Calculating the total size (in bytes) of the file from the two unsigned 32-bit portions
+    (*ptrptr_filedata)->fileSizeInBytes = (uint64_t)(*ptr_volatileFindFileData).nFileSizeLow;
+    (*ptrptr_filedata)->fileSizeInBytes |= ((uint64_t)(*ptr_volatileFindFileData).nFileSizeHigh) << 32; // Shift the high part to the left by 32 bits
 }
 
 // NOTE: Make sure to use \\ for strings when using a forwards slash
@@ -115,7 +119,7 @@ void getCurrDirFilesAddToLL(PROGRAMHEAPMEM **ptr_uniHeapMem) {
     PROGRAMHEAPMEM *uniHeapMem = *ptr_uniHeapMem;
 
     // Clearing any LL nodes if the LL is currently occupied --> Returns only curr dir files in the new LL
-    checkAndClearLL(&uniHeapMem); // LL head and tail pointer should be set to 0x0000000 after this is run
+    checkAndClearLLFiles(&uniHeapMem); // LL head and tail pointer should be set to 0x0000000 after this is run
 
     // Adding the wildcard to the directory string to search for all files in the directory
     char wildcardDirString[MAX_PATH];
@@ -147,7 +151,7 @@ void getCurrDirFilesAddToLL(PROGRAMHEAPMEM **ptr_uniHeapMem) {
     _initialiseFiledataInWindowsPtr(uniHeapMem->nestAppDirectory, &ptr_initialFileData, &volatileFindFileData);
 
     // Adding the fileData to the linkedlist
-    insertInAlphabeticalFilenameLL(&uniHeapMem, ptr_initialFileData); // ptrptr_xx can be parsed straight because it has already been dereferenced in parent func
+    insertInAlphabeticalFilenameLLFiles(&uniHeapMem, ptr_initialFileData); // ptrptr_xx can be parsed straight because it has already been dereferenced in parent func
     // === END OF ADDING NODE === //
     ////////////////////////////////
 
@@ -165,7 +169,7 @@ void getCurrDirFilesAddToLL(PROGRAMHEAPMEM **ptr_uniHeapMem) {
         _initialiseFiledataInWindowsPtr(uniHeapMem->nestAppDirectory, &ptr_moreWindowFileData, &volatileFindFileData);
 
         // Adding node to the linkedlist
-        insertInAlphabeticalFilenameLL(&uniHeapMem, ptr_moreWindowFileData);
+        insertInAlphabeticalFilenameLLFiles(&uniHeapMem, ptr_moreWindowFileData);
 
     } while (FindNextFile(fileSearchHandle, &volatileFindFileData) != 0);
     // === END OF ADDING ALL OTHER NODES === //
@@ -204,7 +208,20 @@ uint8_t addFileButtonsToScreen(PROGRAMHEAPMEM **ptr_uniHeapMem) {
         colourWidgetFromStyles(&uniHeapMem, listBoxRow, "fileRow");
         GtkWidget *rowGrid = gtk_grid_new();
         
+        // Adding the button to the row
         gtk_grid_attach(GTK_GRID(rowGrid), listButton, 0, 2, 1, 1);
+
+        // Adding the size of the file to the row
+        // Determine the number of digits in the fileSize
+        int fileSizeDigits = snprintf(NULL, 0, "%llu", currentNode->fileData->fileSizeInBytes); // Calculates the number of chars that would've been required
+        size_t concatStringsSize = fileSizeDigits + strlen(" bytes") + 1; // +1 for the null terminator
+        char concatStrings[concatStringsSize];
+        sprintf(concatStrings, "%llu bytes", currentNode->fileData->fileSizeInBytes);
+        GtkWidget *fileSizeLabel = gtk_label_new(concatStrings);
+
+        colourWidgetFromStyles(&uniHeapMem, fileSizeLabel, "fileSizeLabel");
+        gtk_grid_attach_next_to(GTK_GRID(rowGrid), fileSizeLabel, listButton, GTK_POS_RIGHT, 1, 1);
+
         gtk_container_add(GTK_CONTAINER(listBoxRow), rowGrid);
         gtk_list_box_insert(GTK_LIST_BOX(uniHeapMem->fileListBox), listBoxRow, -1);
         gtk_widget_show_all(listBoxRow); // This is require to reshow the widget during runtime --> show_all() recursively shows all children

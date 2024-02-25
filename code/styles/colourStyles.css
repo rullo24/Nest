@@ -63,6 +63,15 @@ Selection Color: #2c3e50 (Dark Blue)
    text-shadow: none;
 }
 
+#fileSizeLabel {
+   background-color: #343434;
+   color: #ffffff;
+   font-family: 'Roboto', sans-serif;
+   font-size: 16px;
+   font-weight: bold;
+   text-shadow: none;
+}
+
 #fileButtons:hover {
    box-shadow: none;
    color: #91b8ff;
