@@ -3,16 +3,12 @@ todo:
 - Create another linked list that holds all malloced memory 
     --> This should be iterated through for freeing memory at the end of the program
         NOTE: Need to fall back and remove memory from the LL when 
-- Need to free PTRS_NESTDIRCHANGEDATA *nestNecessaryChangeDirData from callbackHandleDoubleClickedFileOrFolder [keyboard.c] when buttons are destroyed
-- Use the address bar + enter key to move dir
-    --> Currently only opens files [keyboard.c]
 - Set the address bar to show the current dir
     --> Remove the current dir display when clicked on [toolbar.c]
 - Address bar requires buttons for each parent dir above the current
 - need to free the memory that is taken by the buttons for the data
 - Setup back and forward buttons for going up and down the file tree
 - Need to free memory used by the PTRS_NESTDIRCHANGEDATA structs that are assigned to each button
-    --> May require each button struct to also hold this data
-        --> Can currently only deallocate the button that is clicked (having this in the linked list button data would allow a looping deallocation method)
+    --> Can currently only deallocate the button that is clicked (having this in the linked list button data would allow a looping deallocation method)
 - Dellocate memory used by _changeDirFromAddrBarSpecified [keyboard.c] -> PTRS_NESTDIRCHANGEDATA struct
     > This is located [toolbar.c]

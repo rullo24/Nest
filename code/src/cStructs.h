@@ -11,7 +11,7 @@ typedef struct NESTSETTINGS NESTSETTINGS;
 typedef struct LLNode LLNode;
 typedef struct WINDOWSIZESTRUCT WINDOWSIZESTRUCT;
 typedef struct IconImageData IconImageData;
-typedef struct PTRS_NESTDIRCHANGEDATA PTRS_NESTDIRCHANGEDATA;
+typedef struct DEFAULTWINDOWSLOCATIONS DEFAULTWINDOWSLOCATIONS;
 typedef struct PROGRAMHEAPMEM PROGRAMHEAPMEM;
 typedef struct FREEMEMORYNODE FREEMEMORYNODE;
 
@@ -38,7 +38,6 @@ struct NESTSETTINGS {
 
 struct LLNode {
     WINDOWSFILEDATA         *fileData;
-    PTRS_NESTDIRCHANGEDATA  *fileAttachedNecessaryChangeData;
     struct LLNode           *nextNode;
     struct LLNode           *prevNode;
 };
@@ -62,6 +61,16 @@ struct PROGRAMHEAPMEM {
   GtkWidget       *mainWindow; // Pointer controlled by GTK
   GtkCssProvider  *mainCssProvider; // Pointer controlled by GTK
   GtkWidget       *fileListBox; // Holds the file buttons and displayed necessary info
+  DEFAULTWINDOWSLOCATIONS *defaultLocations;
+};
+
+struct DEFAULTWINDOWSLOCATIONS {
+  char *desktopLoc;
+  char *documentsLoc;
+  char *downloadsLoc;
+  char *musicLoc;
+  char *picturesLoc;
+  char *videosLoc;
 };
 
 struct FREEMEMORYNODE {

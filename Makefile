@@ -1,8 +1,9 @@
 # Defining the compiler to be used and all necessary flags
 CC = gcc
 CFLAGS = -Wall -I./code $(shell pkg-config --cflags gtk+-3.0)
-LDFLAGS = -lUser32 $(shell pkg-config --libs gtk+-3.0)
-WINDOWS_FLAGS = # -mwindows 	# <-- uncomment this to remove the windows terminal link to the application
+LDFLAGS = -lUser32 -lShell32 $(shell pkg-config --libs gtk+-3.0)
+RELEASE_FLAGS = # -mwindows -O3 -DNDEBUG -flto -march=native # <-- uncomment this during release build
+# [-mwindows: removes the windows terminal on launch] | [-O3: optimises code for faster runtime] | [-DNDEBUG: Disables assertions] | [-flto: enables link-time optimisations] | [-march=native: architecture-specific optimisations]
 
 # Specifying the location of the source files and where to store the produced object files
 SRC_DIR = ./code/src
@@ -18,7 +19,7 @@ all: $(OBJ_DIR) $(EXECUTABLE)
 
 # Rule to link the object files into the .exe
 $(EXECUTABLE): $(OBJ)
-	$(CC) $^ -o $@ $(LDFLAGS) $(WINDOWS_FLAGS)
+	$(CC) $^ -o $@ $(RELEASE_FLAGS) $(LDFLAGS)
 
 # Rule to create the obj dir if it DNE
 $(OBJ_DIR):

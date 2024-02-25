@@ -75,6 +75,19 @@ gboolean _parentDirButtonClickCallback(GtkWidget *parentDirButton, gpointer pars
   return TRUE;
 }
 
+// Refreshing the current dir
+gboolean _refreshCurrentDirClickCallback(GtkWidget *refreshButton, gpointer parsedData) {
+  PROGRAMHEAPMEM *uniHeapMem = (PROGRAMHEAPMEM*)parsedData;
+
+  // Refreshing the display from the LL
+  uint8_t refreshResult = refreshNewFileDisplayFromLL(&uniHeapMem);
+  if (refreshResult != 1) {
+    logMessage("ERROR: Failed to refresh file display from back button press [toolbar.c]");
+    return FALSE;
+  }
+  return TRUE;
+}
+
 // GtkWidget* createToolbar(GtkWidget *mainWindow, GtkCssProvider *mainCssProvider, int toolbarHeight, char **ptr_nestAppDirectory) {
 GtkWidget* createToolbar(PROGRAMHEAPMEM **ptr_uniHeapMem, int toolbarHeight) {
   // Creating an alias for the double pointer
@@ -96,6 +109,7 @@ GtkWidget* createToolbar(PROGRAMHEAPMEM **ptr_uniHeapMem, int toolbarHeight) {
   g_signal_connect(parentDirButton, "clicked", G_CALLBACK(_parentDirButtonClickCallback), uniHeapMem);
   GtkToolItem *parentDirToolItem = createToolbarToolItemFromButton(parentDirButton);
   GtkWidget *refreshCurrentDirButton = createButtonForToolbar(&uniHeapMem, "refreshCurrentDirToolIcon", "\\icons\\MainToolbar\\Refresh.png", toolbarHeight);
+  g_signal_connect(refreshCurrentDirButton, "clicked", G_CALLBACK(_refreshCurrentDirClickCallback), uniHeapMem);
   GtkToolItem *refreshCurrentDirToolItem = createToolbarToolItemFromButton(refreshCurrentDirButton);
   GtkWidget *ftpButton = createButtonForToolbar(&uniHeapMem, "ftpToolItem", "\\icons\\MainToolbar\\FTP.png", toolbarHeight);
   GtkToolItem *ftpToolItem = createToolbarToolItemFromButton(ftpButton);

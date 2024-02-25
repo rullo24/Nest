@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "log.h"
 #include "linkedlist.h"
 #include <gtk/gtk.h> // Used exclusively for debugging (printing LL to console)
-#include <stdbool.h>
 
 // Function to create a new node
 LLNode *createLLNode(WINDOWSFILEDATA *fileData) {
@@ -11,7 +11,6 @@ LLNode *createLLNode(WINDOWSFILEDATA *fileData) {
     LLNode *ptr_newNode = (LLNode*)malloc(sizeof(LLNode));
 
     if (ptr_newNode == NULL) {
-        g_print("ERROR: Failed to Malloc for LL");
         logMessage("ERROR: Failed to Malloc for the LL");
     }
 
@@ -176,17 +175,9 @@ void removeLastNodeLL(PROGRAMHEAPMEM **ptr_uniHeapMem) {
     // Working on a LL larger than 1 node
     else {
         WINDOWSFILEDATA *tempFileData = uniHeapMem->ptr_tailLL->fileData;
-        printf("More\n");
-        printf("%p | %p\n", uniHeapMem, uniHeapMem->ptr_tailLL->prevNode);
         uniHeapMem->ptr_tailLL = uniHeapMem->ptr_tailLL->prevNode;
-        printf("More\n");
-        printf("%p | %p\n", uniHeapMem, uniHeapMem->ptr_tailLL->nextNode);
-        printf("%p\n", uniHeapMem->ptr_headLL->fileData);
-        printf("%s\n", uniHeapMem->ptr_headLL->fileData->cFileName);
         uniHeapMem->ptr_tailLL->nextNode = NULL;
-        printf("More\n");
         free(tempFileData);
-        printf("More\n");
     }
 }
 

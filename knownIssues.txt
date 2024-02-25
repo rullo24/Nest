@@ -1,0 +1,11 @@
+1. Crash occurs occassionally when clicking on folders
+	> Unsure why
+2. Issue when clicking on .json file in the .vscode dir
+	> 	"""
+		[main 2024-02-24T03:40:38.931Z] update#setState idle
+		[main 2024-02-24T03:40:41.027Z] Extension host with pid 54696 exited with code: 0, signal: unknown.
+		"""
+3. Issue when opening folder that has invalid char characters i.e. Pokemon e is not English
+	> """
+	(Nest.exe:36536): Pango-WARNING **: 13:03:00.823: Invalid UTF-8 string passed to pango_layout_set_text()
+	"""

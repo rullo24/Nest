@@ -13,6 +13,7 @@
 #include "fileBar.h"
 #include "filechoose.h"
 #include <stdbool.h>
+#include "locations.h"
 
 // Initialising the WINDOWSIZESTRUCT
 void initWINDOWSIZESTRUCT (GtkWidget *mainWindow, struct WINDOWSIZESTRUCT *windowSize) {
@@ -60,6 +61,9 @@ void layoutBaseApp(PROGRAMHEAPMEM **ptr_uniHeapMem) {
   GtkWidget *mainToolbar = createToolbar(&uniHeapMem, toolbarHeight);
   colourWidgetFromStyles(&uniHeapMem, mainToolbar, "mainToolbar");
 
+  //////////////////////////////////////////////////////
+  // Creating and adding widget to the right vert box //
+
   int tipsbarHeight = workingAreaHeight/60; // 1:60
   GtkWidget *mainTipsbar = createTipsbar(tipsbarHeight);
   colourWidgetFromStyles(&uniHeapMem, mainTipsbar, "mainTipsbar");
@@ -68,19 +72,30 @@ void layoutBaseApp(PROGRAMHEAPMEM **ptr_uniHeapMem) {
   GtkWidget *filebar = createFilebar(&uniHeapMem, filebarHeight);
   colourWidgetFromStyles(&uniHeapMem, filebar, "filebar");
   
-  GtkWidget *scrolledWindow = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledWindow), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+  GtkWidget *fileBrowserScrolledWindow = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(fileBrowserScrolledWindow), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   // Allocating memory for the fileListBox (so that it is not freed after the scope of this function finishes) --> Need to free at the end of the program run
-  gtk_container_add(GTK_CONTAINER(scrolledWindow), uniHeapMem->fileListBox);
+  gtk_container_add(GTK_CONTAINER(fileBrowserScrolledWindow), uniHeapMem->fileListBox);
   addFileButtonsToScreen(&uniHeapMem); // Moving files to the listbox
   colourWidgetFromStyles(&uniHeapMem, uniHeapMem->fileListBox, "fileListBox");
 
-  // Adding widgets to the right vertical box
   gtk_box_pack_start(GTK_BOX(vertBoxRightMain), filebar, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(vertBoxRightMain), scrolledWindow, TRUE, TRUE, 0); // The filebox window fills the empty space depending on the window size
+  gtk_box_pack_start(GTK_BOX(vertBoxRightMain), fileBrowserScrolledWindow, TRUE, TRUE, 0); // The filebox window fills the empty space depending on the window size
   gtk_box_pack_start(GTK_BOX(vertBoxRightMain), mainTipsbar, FALSE, FALSE, 0); 
 
-  // NEED TO ADD WIDGETS TO THE LEFT BOX
+  // Finished adding widgets to the right vertical box //
+  ///////////////////////////////////////////////////////
+
+  //////////////////////////////////////////////////////
+  // Creating and adding widgets to the left vert box //
+  
+  saveLibraryLocationsToUniPtr(&uniHeapMem);
+
+  GtkWidget *leftBoxDriveAndLibLocationScrolledBox = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(leftBoxDriveAndLibLocationScrolledBox), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
+  // Finished creating and adding widgets to the left vert box
+  ////////////////////////////////////////////////////////////
 
 
 
@@ -107,4 +122,5 @@ void layoutBaseApp(PROGRAMHEAPMEM **ptr_uniHeapMem) {
   // Adding the widgets to the large vertical box
   gtk_box_pack_start(GTK_BOX(vertBoxLargeMain), mainToolbar, FALSE, FALSE, 0); // Adding top toolbar 
   gtk_box_pack_start(GTK_BOX(vertBoxLargeMain), GTK_WIDGET(horzPaneLargeMid), TRUE, TRUE, 0);
+
 }
