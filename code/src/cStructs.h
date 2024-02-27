@@ -2,6 +2,7 @@
 #define CSTRUCTS_H
 #include <windows.h>
 #include <gtk/gtk.h>
+#include <stdbool.h>
 
 //////////////////////////////////////////////////////
 // Forward declaration of all structs to allow for use
@@ -30,6 +31,7 @@ struct WINDOWSFILEDATA {
     DWORD       nFileSizeHigh;
     DWORD       nFileSizeLow;
     uint64_t    fileSizeInBytes;
+    bool        isFolder;
 };
 
 struct NESTSETTINGS {

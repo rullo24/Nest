@@ -1,4 +1,7 @@
 #include <gtk/gtk.h>
+#include <windows.h>
+#include <shlobj.h>
+#include <gdk/gdkwin32.h>
 #include <stdlib.h>
 #include <glib.h>
 #include <tchar.h>
@@ -111,6 +114,14 @@ void _initialiseFiledataInWindowsPtr(char *directoryString, WINDOWSFILEDATA **pt
     // Calculating the total size (in bytes) of the file from the two unsigned 32-bit portions
     (*ptrptr_filedata)->fileSizeInBytes = (uint64_t)(*ptr_volatileFindFileData).nFileSizeLow;
     (*ptrptr_filedata)->fileSizeInBytes |= ((uint64_t)(*ptr_volatileFindFileData).nFileSizeHigh) << 32; // Shift the high part to the left by 32 bits
+
+    // Determining if the retrieved file is a file or folder
+    if ((*ptr_volatileFindFileData).dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+        (*ptrptr_filedata)->isFolder = true;
+    }
+    else {
+        (*ptrptr_filedata)->isFolder = false;
+    }
 }
 
 // NOTE: Make sure to use \\ for strings when using a forwards slash
@@ -179,6 +190,82 @@ void getCurrDirFilesAddToLL(PROGRAMHEAPMEM **ptr_uniHeapMem) {
     FindClose(fileSearchHandle); // Freeing the memory that is used by the windows.h fileSearchHandle
 }
 
+// Give a file location, this function returns the file's windows icon
+HICON getIconFromFilepath(const char *filepath) {
+    SHFILEINFOA shfi;
+    ZeroMemory(&shfi, sizeof(shfi));
+
+    // Retrieve the icon for the given file
+    SHGetFileInfoA(filepath, 0, &shfi, sizeof(shfi), SHGFI_ICON | SHGFI_SMALLICON);
+
+    return shfi.hIcon;
+}
+
+// Function to convert HICON to GdkPixbuf
+GdkPixbuf *hiconToPixbuf(HICON hIcon) {
+    // Get icon information
+    ICONINFO iconInfo;
+    GetIconInfo(hIcon, &iconInfo);
+
+    // Get the icon size
+    BITMAP bmp; // Stores the bitmap data
+    if (GetObject(iconInfo.hbmColor, sizeof(BITMAP), &bmp) != 0 && bmp.bmBits != NULL) {
+        // Bitmap data is present
+        printf("Success\n");
+        int width = bmp.bmWidth;
+        int height = bmp.bmHeight;
+
+        // Create a GdkPixbuf from the bitmap data
+        GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(
+            (guchar *)bmp.bmBits,      // Bitmap data
+            GDK_COLORSPACE_RGB,        // Colorspace
+            TRUE,                      // Has alpha
+            8,                         // Bits per sample
+            width,                     // Width
+            height,                    // Height
+            bmp.bmWidthBytes,          // Rowstride
+            NULL,                      // Destroy function
+            NULL                       // User data
+        );
+
+        return pixbuf;
+        // Process the bitmap data or perform other operations
+    } else {
+        printf("[filechoose.c] bmp.bmBits == NULL\n");
+        // No bitmap data is present
+        // Handle the case where there is no valid bitmap data
+    }
+
+    // Clean up resources
+    DeleteObject(iconInfo.hbmColor);
+    DeleteObject(iconInfo.hbmMask);
+
+    return NULL;
+}
+
+// Creating file size string from file size
+char *_createFileSizeStringFromSize(LLNode *currentNode) {
+    char *concatStrings = (char*)malloc(sizeof(char) * 20); // Max size of string w/o 64-bit overflow and \0 char is 17 chars (provide 20 incase of failed calc)
+
+    if (currentNode->fileData->fileSizeInBytes >= 1073741824) { // Bigger than 1GB
+        uint64_t calculatedGB = currentNode->fileData->fileSizeInBytes/1073741824;
+        sprintf(concatStrings, "%llu GB", calculatedGB);
+    }
+    else if (currentNode->fileData->fileSizeInBytes >= 1048576) { // Bigger than 1MB
+        uint64_t calculatedMB = currentNode->fileData->fileSizeInBytes/1048576;
+        sprintf(concatStrings, "%llu MB", calculatedMB);
+    }
+    else if (currentNode->fileData->fileSizeInBytes >= 1024) { // Bigger than 1KB
+        uint64_t calculatedKB = currentNode->fileData->fileSizeInBytes/1024;
+        sprintf(concatStrings, "%llu KB", calculatedKB);
+    }
+    else {
+        sprintf(concatStrings, "%llu Bytes", currentNode->fileData->fileSizeInBytes);
+    }
+
+    return concatStrings; // To be free()'d after use
+}
+
 // Adding all of the LL files to the listbox
 uint8_t addFileButtonsToScreen(PROGRAMHEAPMEM **ptr_uniHeapMem) {
     // Creating an alias for the double pointer
@@ -211,17 +298,24 @@ uint8_t addFileButtonsToScreen(PROGRAMHEAPMEM **ptr_uniHeapMem) {
         // Adding the button to the row
         gtk_grid_attach(GTK_GRID(rowGrid), listButton, 0, 2, 1, 1);
 
-        // Adding the size of the file to the row
-        // Determine the number of digits in the fileSize
-        int fileSizeDigits = snprintf(NULL, 0, "%llu", currentNode->fileData->fileSizeInBytes); // Calculates the number of chars that would've been required
-        size_t concatStringsSize = fileSizeDigits + strlen(" bytes") + 1; // +1 for the null terminator
-        char concatStrings[concatStringsSize];
-        sprintf(concatStrings, "%llu bytes", currentNode->fileData->fileSizeInBytes);
-        GtkWidget *fileSizeLabel = gtk_label_new(concatStrings);
+        // Adding the file's icon into the row
+        HICON windowsFileIcon = getIconFromFilepath(currentNode->fileData->fullPathName);
+        GdkPixbuf *currentFilePixbuf = hiconToPixbuf(windowsFileIcon);
 
-        colourWidgetFromStyles(&uniHeapMem, fileSizeLabel, "fileSizeLabel");
-        gtk_grid_attach_next_to(GTK_GRID(rowGrid), fileSizeLabel, listButton, GTK_POS_RIGHT, 1, 1);
+        GtkWidget *currentFileIconFromPixbuf = gtk_image_new_from_pixbuf(currentFilePixbuf);
+        gtk_grid_attach_next_to(GTK_GRID(rowGrid), currentFileIconFromPixbuf, listButton, GTK_POS_LEFT, 1, 1);
 
+        // Adding the size of the file if it is not a folder
+        if (currentNode->fileData->isFolder == false) { // Only adding the file size if it is not a folder
+            char *concatStrings = _createFileSizeStringFromSize(currentNode); // char * memory to be free()'d after use
+
+            GtkWidget *fileSizeLabel = gtk_label_new(concatStrings);
+            colourWidgetFromStyles(&uniHeapMem, fileSizeLabel, "fileSizeLabel");
+            gtk_grid_attach_next_to(GTK_GRID(rowGrid), fileSizeLabel, listButton, GTK_POS_RIGHT, 1, 1);
+
+            free(concatStrings);
+        }
+        
         gtk_container_add(GTK_CONTAINER(listBoxRow), rowGrid);
         gtk_list_box_insert(GTK_LIST_BOX(uniHeapMem->fileListBox), listBoxRow, -1);
         gtk_widget_show_all(listBoxRow); // This is require to reshow the widget during runtime --> show_all() recursively shows all children

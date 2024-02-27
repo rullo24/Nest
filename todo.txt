@@ -1,4 +1,6 @@
 todo:
+IMPORTANT: Make finding and showing files a multi-threaded process
+- Set folders to show above files in file viewer pane (regardless of name)
 - Free all heaped memory in [main.c]
 - Create another linked list that holds all malloced memory 
     --> This should be iterated through for freeing memory at the end of the program
