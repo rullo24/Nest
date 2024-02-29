@@ -91,6 +91,7 @@ uint8_t _initHeapMemPointers(PROGRAMHEAPMEM **ptr_uniHeapMem) {
   uniHeapMem->mainWindow = generateWindow(&uniHeapMem); // GtkWidget* created from gtk_window_new() func (also changes several GTK window settings)
   uniHeapMem->mainCssProvider = loadCssProviderAndStyles(); // GtkCssProvider* created from gtk_css_provider_new() (local file used)
   uniHeapMem->fileListBox = gtk_list_box_new(); // To be set when the list box is created
+  gtk_list_box_set_activate_on_single_click(GTK_LIST_BOX(uniHeapMem->fileListBox), FALSE);
 
   // Setting memory for the default locations of user libraries
   uniHeapMem->defaultLocations = (DEFAULTWINDOWSLOCATIONS*)malloc(MAX_PATH * sizeof(char) + 1); // +1 for \0

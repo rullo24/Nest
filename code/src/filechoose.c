@@ -260,7 +260,7 @@ char *_createFileSizeStringFromSize(LLNode *currentNode) {
         sprintf(concatStrings, "%llu KB", calculatedKB);
     }
     else {
-        sprintf(concatStrings, "%llu Bytes", currentNode->fileData->fileSizeInBytes);
+        sprintf(concatStrings, "%llu B", currentNode->fileData->fileSizeInBytes);
     }
 
     return concatStrings; // To be free()'d after use
@@ -284,6 +284,35 @@ uint8_t addFileButtonsToScreen(PROGRAMHEAPMEM **ptr_uniHeapMem) {
         return 1; // Success for an empty folder location (or a broken head ptr) --> fixed elsewhere if so
     }
 
+    // Create a box row to store the row labels
+    GtkWidget *initialListBoxRow = gtk_list_box_row_new();
+    GtkWidget *initialRowGrid = gtk_grid_new();
+    gtk_grid_set_column_homogeneous(GTK_GRID(initialRowGrid), TRUE);
+
+    GtkWidget *imagesLabel = gtk_label_new("Images");
+    gtk_label_set_xalign(GTK_LABEL(imagesLabel), 0.1);
+    gtk_grid_attach(GTK_GRID(initialRowGrid), imagesLabel, 0, 0, 1, 1); // (Grid, child, col, row, columnspan, rowspan)
+    colourWidgetFromStyles(&uniHeapMem, imagesLabel, "fileHeaders");
+
+    GtkWidget *nameLabel = gtk_label_new("Name");
+    gtk_label_set_xalign(GTK_LABEL(nameLabel), 0.1);
+    gtk_grid_attach(GTK_GRID(initialRowGrid), nameLabel, 1, 0, 5, 1); // (Grid, child, col, row, columnspan, rowspan)
+    colourWidgetFromStyles(&uniHeapMem, nameLabel, "fileHeaders");
+    
+    GtkWidget *sizeLabel = gtk_label_new("Size");
+    gtk_label_set_xalign(GTK_LABEL(sizeLabel), 0.1);
+    gtk_grid_attach(GTK_GRID(initialRowGrid), sizeLabel, 6, 0, 1, 1); // (Grid, child, col, row, columnspan, rowspan)
+    colourWidgetFromStyles(&uniHeapMem, sizeLabel, "fileHeaders");
+
+    GtkWidget *modifiedLabel = gtk_label_new("Last Modified");
+    gtk_label_set_xalign(GTK_LABEL(modifiedLabel), 0.1);
+    gtk_grid_attach(GTK_GRID(initialRowGrid), modifiedLabel, 7, 0, 3, 1); // (Grid, child, col, row, columnspan, rowspan)
+    colourWidgetFromStyles(&uniHeapMem, modifiedLabel, "fileHeaders");
+
+    gtk_container_add(GTK_CONTAINER(initialListBoxRow), initialRowGrid);
+    gtk_list_box_insert(GTK_LIST_BOX(uniHeapMem->fileListBox), initialListBoxRow, -1);
+    gtk_widget_show_all(initialListBoxRow); // This is require to reshow the widget during runtime --> show_all() recursively shows all children
+
     LLNode *currentNode = uniHeapMem->ptr_headLL;
     while (currentNode != NULL) {
         GtkWidget *listButton = gtk_button_new_with_label(currentNode->fileData->cFileName);
@@ -294,16 +323,16 @@ uint8_t addFileButtonsToScreen(PROGRAMHEAPMEM **ptr_uniHeapMem) {
         GtkWidget *listBoxRow = gtk_list_box_row_new();
         colourWidgetFromStyles(&uniHeapMem, listBoxRow, "fileRow");
         GtkWidget *rowGrid = gtk_grid_new();
-        
-        // Adding the button to the row
-        gtk_grid_attach(GTK_GRID(rowGrid), listButton, 0, 2, 1, 1);
+        gtk_grid_set_column_homogeneous(GTK_GRID(rowGrid), TRUE);
 
         // Adding the file's icon into the row
         HICON windowsFileIcon = getIconFromFilepath(currentNode->fileData->fullPathName);
         GdkPixbuf *currentFilePixbuf = hiconToPixbuf(windowsFileIcon);
-
         GtkWidget *currentFileIconFromPixbuf = gtk_image_new_from_pixbuf(currentFilePixbuf);
-        gtk_grid_attach_next_to(GTK_GRID(rowGrid), currentFileIconFromPixbuf, listButton, GTK_POS_LEFT, 1, 1);
+        gtk_grid_attach(GTK_GRID(rowGrid), currentFileIconFromPixbuf, 0, 0, 1, 1); // (Grid, child, col, row, columnspan, rowspan) 
+
+        // Adding the button to the row
+        gtk_grid_attach(GTK_GRID(rowGrid), listButton, 1, 0, 5, 1); // (Grid, child, col, row, columnspan, rowspan)
 
         // Adding the size of the file if it is not a folder
         if (currentNode->fileData->isFolder == false) { // Only adding the file size if it is not a folder
@@ -311,11 +340,34 @@ uint8_t addFileButtonsToScreen(PROGRAMHEAPMEM **ptr_uniHeapMem) {
 
             GtkWidget *fileSizeLabel = gtk_label_new(concatStrings);
             colourWidgetFromStyles(&uniHeapMem, fileSizeLabel, "fileSizeLabel");
-            gtk_grid_attach_next_to(GTK_GRID(rowGrid), fileSizeLabel, listButton, GTK_POS_RIGHT, 1, 1);
-
+            gtk_label_set_xalign(GTK_LABEL(fileSizeLabel), 0.1);
+            gtk_grid_attach(GTK_GRID(rowGrid), fileSizeLabel, 6, 0, 1, 1); // (Grid, child, col, row, columnspan, rowspan)
+ 
             free(concatStrings);
         }
-        
+        else { // Creating an empty label to occupy the space
+            GtkWidget *fileSizeLabel = gtk_label_new("");
+            colourWidgetFromStyles(&uniHeapMem, fileSizeLabel, "fileSizeLabel");
+            gtk_label_set_xalign(GTK_LABEL(fileSizeLabel), 0.1);
+            gtk_grid_attach(GTK_GRID(rowGrid), fileSizeLabel, 6, 0, 1, 1); // (Grid, child, col, row, columnspan, rowspan)
+        }
+
+        // Adding the last modified date label
+        SYSTEMTIME currFileLastWriteDT;
+        FileTimeToSystemTime(&(currentNode->fileData->ftLastWriteTime), &currFileLastWriteDT);
+
+        char lastWriteDateString[25]; // Converting the SYSTEMTIME to a usable string
+        GetDateFormatA(LOCALE_USER_DEFAULT, DATE_SHORTDATE, &currFileLastWriteDT, NULL, lastWriteDateString, sizeof(lastWriteDateString));
+        char lastWriteTimeString[50];
+        GetTimeFormatA(LOCALE_USER_DEFAULT, 0, &currFileLastWriteDT, NULL, lastWriteTimeString, sizeof(lastWriteTimeString));
+
+        strcat(lastWriteTimeString, " "); // Adding a space between the date and time in the dt string
+        strcat(lastWriteTimeString, lastWriteDateString); // Adding both strings together to build a dt string
+        GtkWidget *lastModifiedLabel = gtk_label_new(lastWriteTimeString);
+        gtk_label_set_xalign(GTK_LABEL(lastModifiedLabel), 0.1);
+        colourWidgetFromStyles(&uniHeapMem, lastModifiedLabel, "fileSizeLabel");
+        gtk_grid_attach(GTK_GRID(rowGrid), lastModifiedLabel, 7, 0, 3, 1); // (Grid, child, col, row, columnspan, rowspan)
+
         gtk_container_add(GTK_CONTAINER(listBoxRow), rowGrid);
         gtk_list_box_insert(GTK_LIST_BOX(uniHeapMem->fileListBox), listBoxRow, -1);
         gtk_widget_show_all(listBoxRow); // This is require to reshow the widget during runtime --> show_all() recursively shows all children

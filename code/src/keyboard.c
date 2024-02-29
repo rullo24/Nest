@@ -105,7 +105,7 @@ gboolean checkForAddrBarEnter(GtkWidget *addrBar, GdkEventKey *event, gpointer d
 // Callback that handles a double clicked file or folder
 gboolean callbackHandleDoubleClickedFileOrFolder(GtkWidget *listButton, GdkEventButton *event, gpointer parsedData)
 {
-    if (event->type == GDK_DOUBLE_BUTTON_PRESS) {
+    if (event->type == GDK_DOUBLE_BUTTON_PRESS && event->button == GDK_BUTTON_PRIMARY) {
       WINDOWSFILEDATA *tempFileDataPointer = getFileDataFromButton(listButton);     
       if (tempFileDataPointer == NULL) {
         logMessage("ERROR: Empty temp file data pointer [keyboard.c]");
