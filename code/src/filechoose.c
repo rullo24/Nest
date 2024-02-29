@@ -290,22 +290,22 @@ uint8_t addFileButtonsToScreen(PROGRAMHEAPMEM **ptr_uniHeapMem) {
     gtk_grid_set_column_homogeneous(GTK_GRID(initialRowGrid), TRUE);
 
     GtkWidget *imagesLabel = gtk_label_new("Images");
-    gtk_label_set_xalign(GTK_LABEL(imagesLabel), 0.1);
+    gtk_label_set_xalign(GTK_LABEL(imagesLabel), 0.0);
     gtk_grid_attach(GTK_GRID(initialRowGrid), imagesLabel, 0, 0, 1, 1); // (Grid, child, col, row, columnspan, rowspan)
     colourWidgetFromStyles(&uniHeapMem, imagesLabel, "fileHeaders");
 
     GtkWidget *nameLabel = gtk_label_new("Name");
-    gtk_label_set_xalign(GTK_LABEL(nameLabel), 0.1);
+    gtk_label_set_xalign(GTK_LABEL(nameLabel), 0.0);
     gtk_grid_attach(GTK_GRID(initialRowGrid), nameLabel, 1, 0, 5, 1); // (Grid, child, col, row, columnspan, rowspan)
     colourWidgetFromStyles(&uniHeapMem, nameLabel, "fileHeaders");
     
     GtkWidget *sizeLabel = gtk_label_new("Size");
-    gtk_label_set_xalign(GTK_LABEL(sizeLabel), 0.1);
+    gtk_label_set_xalign(GTK_LABEL(sizeLabel), 0.0);
     gtk_grid_attach(GTK_GRID(initialRowGrid), sizeLabel, 6, 0, 1, 1); // (Grid, child, col, row, columnspan, rowspan)
     colourWidgetFromStyles(&uniHeapMem, sizeLabel, "fileHeaders");
 
     GtkWidget *modifiedLabel = gtk_label_new("Last Modified");
-    gtk_label_set_xalign(GTK_LABEL(modifiedLabel), 0.1);
+    gtk_label_set_xalign(GTK_LABEL(modifiedLabel), 0.0);
     gtk_grid_attach(GTK_GRID(initialRowGrid), modifiedLabel, 7, 0, 3, 1); // (Grid, child, col, row, columnspan, rowspan)
     colourWidgetFromStyles(&uniHeapMem, modifiedLabel, "fileHeaders");
 
@@ -340,7 +340,7 @@ uint8_t addFileButtonsToScreen(PROGRAMHEAPMEM **ptr_uniHeapMem) {
 
             GtkWidget *fileSizeLabel = gtk_label_new(concatStrings);
             colourWidgetFromStyles(&uniHeapMem, fileSizeLabel, "fileSizeLabel");
-            gtk_label_set_xalign(GTK_LABEL(fileSizeLabel), 0.1);
+            gtk_label_set_xalign(GTK_LABEL(fileSizeLabel), 0.0);
             gtk_grid_attach(GTK_GRID(rowGrid), fileSizeLabel, 6, 0, 1, 1); // (Grid, child, col, row, columnspan, rowspan)
  
             free(concatStrings);
@@ -348,7 +348,7 @@ uint8_t addFileButtonsToScreen(PROGRAMHEAPMEM **ptr_uniHeapMem) {
         else { // Creating an empty label to occupy the space
             GtkWidget *fileSizeLabel = gtk_label_new("");
             colourWidgetFromStyles(&uniHeapMem, fileSizeLabel, "fileSizeLabel");
-            gtk_label_set_xalign(GTK_LABEL(fileSizeLabel), 0.1);
+            gtk_label_set_xalign(GTK_LABEL(fileSizeLabel), 0.0);
             gtk_grid_attach(GTK_GRID(rowGrid), fileSizeLabel, 6, 0, 1, 1); // (Grid, child, col, row, columnspan, rowspan)
         }
 
@@ -364,7 +364,7 @@ uint8_t addFileButtonsToScreen(PROGRAMHEAPMEM **ptr_uniHeapMem) {
         strcat(lastWriteTimeString, " "); // Adding a space between the date and time in the dt string
         strcat(lastWriteTimeString, lastWriteDateString); // Adding both strings together to build a dt string
         GtkWidget *lastModifiedLabel = gtk_label_new(lastWriteTimeString);
-        gtk_label_set_xalign(GTK_LABEL(lastModifiedLabel), 0.1);
+        gtk_label_set_xalign(GTK_LABEL(lastModifiedLabel), 0.0);
         colourWidgetFromStyles(&uniHeapMem, lastModifiedLabel, "fileSizeLabel");
         gtk_grid_attach(GTK_GRID(rowGrid), lastModifiedLabel, 7, 0, 3, 1); // (Grid, child, col, row, columnspan, rowspan)
 
